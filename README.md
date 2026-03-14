@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <meta name="google-site-verification" content="W7US3wpAIivpMbZNoGGPHJ5gIeSUjsNSCnZvrnCMZFA" />
 </head>
 <body>
-  <meta name="google-site-verification" content="W7US3wpAIivpMbZNoGGPHJ5gIeSUjsNSCnZvrnCMZFA" />
 　　<h1>はじめてのHTML</h1>
 　　<p>これはダミーテキストです。ここに本文が入ります。</p>
 </body>
