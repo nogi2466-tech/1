@@ -1,13 +1,330 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <meta name="google-site-verification" content="W7US3wpAIivpMbZNoGGPHJ5gIeSUjsNSCnZvrnCMZFA" />
+<meta charset="UTF-8">
+<title>URL一覧アプリ</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 40px;
+    max-width: 900px;
+    margin: auto;
+    transition: 0.3s;
+  }
+
+  :root {
+    --bg: #f0f2f5;
+    --text: #333;
+    --card-bg: #fff;
+  }
+  .dark {
+    --bg: #1e1e1e;
+    --text: #f5f5f5;
+    --card-bg: #2c2c2c;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 34px;
+    margin-bottom: 30px;
+  }
+
+  /* タブ */
+  .tabs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .tab {
+    padding: 10px 16px;
+    background: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .tab.active {
+    background: #4a90e2;
+    color: white;
+    border-color: #4a90e2;
+  }
+
+  /* カード */
+  .card {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+  }
+  .category-label {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: white;
+    margin-right: 10px;
+  }
+  .delete-btn {
+    background: #e74c3c;
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    border: none;
+    display: none;
+    margin-top: 10px;
+  }
+
+  /* パスワード画面 */
+  #passwordArea {
+    display: none;
+    margin-bottom: 20px;
+  }
+
+  /* 設定ボタン */
+  #addPageButton {
+    display: none;
+    margin-bottom: 20px;
+  }
+
+  /* モード切替 */
+  #modeButton {
+    display: none;
+    margin-bottom: 20px;
+  }
+
+  /* モーダル */
+  #modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+  }
+  #modalContent {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    width: 400px;
+    color: var(--text);
+  }
+  #modalContent input, #modalContent textarea, #modalContent select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+  #modalContent button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #4a90e2;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+  }
+</style>
 </head>
 <body>
-　　<h1>はじめてのHTML</h1>
-　　<p>これはダミーテキストです。ここに本文が入ります。</p>
+
+<h1>URL一覧アプリ</h1>
+
+<div class="tabs" id="tabs"></div>
+
+<!-- パスワード入力 -->
+<div id="passwordArea">
+  <input id="passwordInput" type="password" placeholder="パスワードを入力">
+  <button onclick="checkPassword()">送信</button>
+</div>
+
+<!-- 設定で表示する追加ページボタン -->
+<div id="addPageButton">
+  <button onclick="openModal()">URL追加ページへ</button>
+</div>
+
+<!-- ライト／ダークモード切替 -->
+<div id="modeButton">
+  <button onclick="toggleMode()">ライト／ダーク切替</button>
+</div>
+
+<!-- モーダル（追加ページ） -->
+<div id="modal">
+  <div id="modalContent">
+    <h3>新規追加</h3>
+    <input id="titleInput" type="text" placeholder="タイトル">
+    <input id="urlInput" type="text" placeholder="URL">
+    <textarea id="detailInput" placeholder="詳細"></textarea>
+
+    <select id="categorySelect">
+      <option value="京王">京王</option>
+      <option value="JR">JR</option>
+      <option value="大手私鉄">大手私鉄</option>
+      <option value="その他">その他</option>
+      <option value="資料">資料</option>
+      <option value="情報">情報</option>
+      <option value="いろんなURL">いろんなURL</option>
+      <option value="設定">設定</option>
+    </select>
+
+    <button onclick="addUrl()">追加する</button>
+    <button onclick="closeModal()" style="margin-top:10px; background:#7f8c8d;">閉じる</button>
+  </div>
+</div>
+
+<div id="urlList"></div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxxxxxx/exec";
+
+  const categories = [
+    "すべて", "京王", "JR", "大手私鉄", "その他",
+    "資料", "情報", "いろんなURL", "設定"
+  ];
+
+  const colors = {
+    "京王": "#8e44ad",
+    "JR": "#27ae60",
+    "大手私鉄": "#2980b9",
+    "その他": "#e67e22",
+    "資料": "#c0392b",
+    "情報": "#16a085",
+    "いろんなURL": "#f1c40f",
+    "設定": "#7f8c8d"
+  };
+
+  let currentCategory = "すべて";
+  let allData = [];
+  let canEdit = false;
+
+  /* タブ生成 */
+  const tabs = document.getElementById("tabs");
+  categories.forEach(cat => {
+    const tab = document.createElement("div");
+    tab.className = "tab" + (cat === "すべて" ? " active" : "");
+    tab.innerText = cat;
+    tab.onclick = () => {
+      currentCategory = cat;
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+
+      if (cat === "設定") {
+        document.getElementById("passwordArea").style.display = "flex";
+      } else {
+        document.getElementById("passwordArea").style.display = "none";
+      }
+
+      render();
+    };
+    tabs.appendChild(tab);
+  });
+
+  /* パスワードチェック */
+  function checkPassword() {
+    const pw = document.getElementById("passwordInput").value;
+    if (pw === "0829") {
+      canEdit = true;
+      document.getElementById("addPageButton").style.display = "block";
+      document.getElementById("modeButton").style.display = "block";
+      alert("編集モードが有効になりました");
+    } else {
+      alert("パスワードが違います");
+    }
+  }
+
+  /* モード切替 */
+  function toggleMode() {
+    document.body.classList.toggle("dark");
+  }
+
+  /* モーダル開閉 */
+  function openModal() {
+    document.getElementById("modal").style.display = "flex";
+  }
+  function closeModal() {
+    document.getElementById("modal").style.display = "none";
+  }
+
+  async function fetchUrls() {
+    const res = await fetch(API_URL);
+    allData = await res.json();
+
+    /* 50音順ソート（タイトル） */
+    allData.sort((a, b) => a.title.localeCompare(b.title, "ja"));
+
+    render();
+  }
+
+  async function addUrl() {
+    if (!canEdit) return alert("編集権限がありません");
+
+    const title = document.getElementById("titleInput").value.trim();
+    const url = document.getElementById("urlInput").value.trim();
+    const detail = document.getElementById("detailInput").value.trim();
+    const category = document.getElementById("categorySelect").value;
+    const time = new Date().toLocaleString("ja-JP");
+
+    if (!title || !url) return alert("タイトルとURLは必須です");
+
+    await fetch(API_URL +
+      "?add=" + encodeURIComponent(url) +
+      "&title=" + encodeURIComponent(title) +
+      "&detail=" + encodeURIComponent(detail) +
+      "&cat=" + encodeURIComponent(category) +
+      "&time=" + encodeURIComponent(time)
+    );
+
+    closeModal();
+    fetchUrls();
+  }
+
+  async function deleteUrl(index) {
+    if (!canEdit) return alert("編集権限がありません");
+
+    await fetch(API_URL + "?delete=" + index);
+    fetchUrls();
+  }
+
+  function render() {
+    const list = document.getElementById("urlList");
+    list.innerHTML = "";
+
+    let filtered = [];
+
+    if (currentCategory === "すべて") {
+      filtered = allData.filter(item =>
+        ["京王", "JR", "大手私鉄", "その他"].includes(item.category)
+      );
+    } else {
+      filtered = allData.filter(item => item.category === currentCategory);
+    }
+
+    filtered.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <div>
+          <span class="category-label" style="background:${colors[item.category]}">${item.category}</span>
+          <strong>${item.title}</strong><br>
+          <a href="${item.url}" target="_blank">${item.url}</a><br>
+          <small>${item.detail}</small><br>
+          <small>追加日時：${item.time}</small>
+        </div>
+        <button class="delete-btn" onclick="deleteUrl(${item.index})" style="display:${canEdit ? "inline-block" : "none"}">削除</button>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  fetchUrls();
+</script>
+
 </body>
 </html>
