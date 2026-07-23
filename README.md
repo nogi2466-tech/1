@@ -3,7 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <title>URL一覧アプリ</title>
+
 <style>
+  :root {
+    --bg: #f5f7fa;
+    --text: #333;
+    --card-bg: #fff;
+    --shadow: rgba(0,0,0,0.1);
+  }
+  .dark {
+    --bg: #1e1e1e;
+    --text: #f5f5f5;
+    --card-bg: #2c2c2c;
+    --shadow: rgba(255,255,255,0.1);
+  }
+
   body {
     font-family: 'Segoe UI', sans-serif;
     background: var(--bg);
@@ -14,59 +28,46 @@
     transition: 0.3s;
   }
 
-  :root {
-    --bg: #f0f2f5;
-    --text: #333;
-    --card-bg: #fff;
-  }
-  .dark {
-    --bg: #1e1e1e;
-    --text: #f5f5f5;
-    --card-bg: #2c2c2c;
-  }
-
   h1 {
     text-align: center;
     font-size: 34px;
     margin-bottom: 30px;
+    font-weight: 700;
   }
 
-  /* タブ */
+  /* カテゴリタブ */
   .tabs {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
   }
   .tab {
-    padding: 10px 16px;
+    padding: 10px 18px;
+    border-radius: 20px;
     background: var(--card-bg);
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    box-shadow: 0 2px 5px var(--shadow);
     cursor: pointer;
     transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
   .tab.active {
     background: #4a90e2;
     color: white;
-    border-color: #4a90e2;
   }
 
-  /* カード */
+  /* カードUI */
   .card {
     background: var(--card-bg);
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 12px;
-    border: 1px solid #ddd;
+    padding: 18px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 3px 8px var(--shadow);
+    border-left: 8px solid var(--accent);
   }
-  .category-label {
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    color: white;
-    margin-right: 10px;
-  }
+
   .delete-btn {
     background: #e74c3c;
     padding: 8px 12px;
@@ -74,24 +75,18 @@
     color: white;
     cursor: pointer;
     border: none;
-    display: none;
     margin-top: 10px;
+    display: none;
   }
 
-  /* パスワード画面 */
+  /* パスワード */
   #passwordArea {
     display: none;
     margin-bottom: 20px;
   }
 
   /* 設定ボタン */
-  #addPageButton {
-    display: none;
-    margin-bottom: 20px;
-  }
-
-  /* モード切替 */
-  #modeButton {
+  #addPageButton, #modeButton {
     display: none;
     margin-bottom: 20px;
   }
@@ -108,23 +103,25 @@
   }
   #modalContent {
     background: var(--card-bg);
-    padding: 20px;
-    border-radius: 12px;
-    width: 400px;
-    color: var(--text);
+    padding: 25px;
+    border-radius: 14px;
+    width: 420px;
+    box-shadow: 0 5px 15px var(--shadow);
   }
   #modalContent input, #modalContent textarea, #modalContent select {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 12px;
-    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 14px;
+    border-radius: 10px;
     border: 1px solid #ccc;
+    background: var(--bg);
+    color: var(--text);
   }
   #modalContent button {
     width: 100%;
     padding: 12px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     background: #4a90e2;
     color: white;
     font-size: 16px;
@@ -138,23 +135,20 @@
 
 <div class="tabs" id="tabs"></div>
 
-<!-- パスワード入力 -->
 <div id="passwordArea">
   <input id="passwordInput" type="password" placeholder="パスワードを入力">
   <button onclick="checkPassword()">送信</button>
 </div>
 
-<!-- 設定で表示する追加ページボタン -->
 <div id="addPageButton">
   <button onclick="openModal()">URL追加ページへ</button>
 </div>
 
-<!-- ライト／ダークモード切替 -->
 <div id="modeButton">
   <button onclick="toggleMode()">ライト／ダーク切替</button>
 </div>
 
-<!-- モーダル（追加ページ） -->
+<!-- モーダル -->
 <div id="modal">
   <div id="modalContent">
     <h3>新規追加</h3>
@@ -174,30 +168,26 @@
     </select>
 
     <button onclick="addUrl()">追加する</button>
-    <button onclick="closeModal()" style="margin-top:10px; background:#7f8c8d;">閉じる</button>
+    <button onclick="closeModal()" style="margin-top:10px;background:#7f8c8d;">閉じる</button>
   </div>
 </div>
 
 <div id="urlList"></div>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxxxxxx/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbxzSusN6yzb05npJma0F13AR2-kycQn2KhW10zsevM2TQQrmYUsfYt7CNl9tQdlCLxziw/exec";
 
   const categories = [
-    "すべて", "京王", "JR", "大手私鉄", "その他",
-    "資料", "情報", "いろんなURL", "設定"
+    {name:"すべて", icon:"📚"},
+    {name:"京王", icon:"🚃", color:"#8e44ad"},
+    {name:"JR", icon:"🟩", color:"#27ae60"},
+    {name:"大手私鉄", icon:"🟦", color:"#2980b9"},
+    {name:"その他", icon:"⚪", color:"#e67e22"},
+    {name:"資料", icon:"📄", color:"#c0392b"},
+    {name:"情報", icon:"🔍", color:"#16a085"},
+    {name:"いろんなURL", icon:"🌐", color:"#f1c40f"},
+    {name:"設定", icon:"⚙️", color:"#7f8c8d"}
   ];
-
-  const colors = {
-    "京王": "#8e44ad",
-    "JR": "#27ae60",
-    "大手私鉄": "#2980b9",
-    "その他": "#e67e22",
-    "資料": "#c0392b",
-    "情報": "#16a085",
-    "いろんなURL": "#f1c40f",
-    "設定": "#7f8c8d"
-  };
 
   let currentCategory = "すべて";
   let allData = [];
@@ -207,14 +197,14 @@
   const tabs = document.getElementById("tabs");
   categories.forEach(cat => {
     const tab = document.createElement("div");
-    tab.className = "tab" + (cat === "すべて" ? " active" : "");
-    tab.innerText = cat;
+    tab.className = "tab" + (cat.name === "すべて" ? " active" : "");
+    tab.innerHTML = `${cat.icon} ${cat.name}`;
     tab.onclick = () => {
-      currentCategory = cat;
+      currentCategory = cat.name;
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
       tab.classList.add("active");
 
-      if (cat === "設定") {
+      if (cat.name === "設定") {
         document.getElementById("passwordArea").style.display = "flex";
       } else {
         document.getElementById("passwordArea").style.display = "none";
@@ -225,10 +215,9 @@
     tabs.appendChild(tab);
   });
 
-  /* パスワードチェック */
+  /* パスワード */
   function checkPassword() {
-    const pw = document.getElementById("passwordInput").value;
-    if (pw === "0829") {
+    if (document.getElementById("passwordInput").value === "0829") {
       canEdit = true;
       document.getElementById("addPageButton").style.display = "block";
       document.getElementById("modeButton").style.display = "block";
@@ -243,7 +232,7 @@
     document.body.classList.toggle("dark");
   }
 
-  /* モーダル開閉 */
+  /* モーダル */
   function openModal() {
     document.getElementById("modal").style.display = "flex";
   }
@@ -251,46 +240,62 @@
     document.getElementById("modal").style.display = "none";
   }
 
+  /* データ取得 */
   async function fetchUrls() {
     const res = await fetch(API_URL);
     allData = await res.json();
-
-    /* 50音順ソート（タイトル） */
     allData.sort((a, b) => a.title.localeCompare(b.title, "ja"));
-
     render();
   }
 
-  async function addUrl() {
-    if (!canEdit) return alert("編集権限がありません");
+  /* 追加 */
+ async function addUrl() {
+  if (!canEdit) return alert("編集権限がありません");
 
-    const title = document.getElementById("titleInput").value.trim();
-    const url = document.getElementById("urlInput").value.trim();
-    const detail = document.getElementById("detailInput").value.trim();
-    const category = document.getElementById("categorySelect").value;
-    const time = new Date().toLocaleString("ja-JP");
+  const title = document.getElementById("titleInput").value.trim();
+  const url = document.getElementById("urlInput").value.trim();
+  const detail = document.getElementById("detailInput").value.trim();
+  const category = document.getElementById("categorySelect").value;
+  const time = new Date().toLocaleString("ja-JP");
 
-    if (!title || !url) return alert("タイトルとURLは必須です");
+  if (!title || !url) return alert("タイトルとURLは必須です");
 
-    await fetch(API_URL +
-      "?add=" + encodeURIComponent(url) +
-      "&title=" + encodeURIComponent(title) +
-      "&detail=" + encodeURIComponent(detail) +
-      "&cat=" + encodeURIComponent(category) +
-      "&time=" + encodeURIComponent(time)
-    );
+  const sendUrl = API_URL +
+    "?add=" + encodeURIComponent(url) +
+    "&title=" + encodeURIComponent(title) +
+    "&detail=" + encodeURIComponent(detail) +
+    "&cat=" + encodeURIComponent(category) +
+    "&time=" + encodeURIComponent(time);
+
+  try {
+    const res = await fetch(sendUrl);
+    const text = await res.text();
+
+    console.log("GAS response:", text);
+
+    if (!res.ok) {
+      alert("GASがエラーを返しました（保存できていません）");
+      return;
+    }
 
     closeModal();
     fetchUrls();
-  }
 
+  } catch (err) {
+    console.error(err);
+    alert("通信エラー：GASに送信できませんでした");
+  }
+}
+
+
+  /* 削除 */
   async function deleteUrl(index) {
     if (!canEdit) return alert("編集権限がありません");
-
     await fetch(API_URL + "?delete=" + index);
     fetchUrls();
   }
 
+  /* 表示 */
   function render() {
     const list = document.getElementById("urlList");
     list.innerHTML = "";
@@ -299,24 +304,24 @@
 
     if (currentCategory === "すべて") {
       filtered = allData.filter(item =>
-        ["京王", "JR", "大手私鉄", "その他"].includes(item.category)
+        ["京王","JR","大手私鉄","その他"].includes(item.category)
       );
     } else {
       filtered = allData.filter(item => item.category === currentCategory);
     }
 
     filtered.forEach(item => {
+      const catColor = categories.find(c => c.name === item.category)?.color || "#ccc";
+
       const card = document.createElement("div");
       card.className = "card";
+      card.style.setProperty("--accent", catColor);
 
       card.innerHTML = `
-        <div>
-          <span class="category-label" style="background:${colors[item.category]}">${item.category}</span>
-          <strong>${item.title}</strong><br>
-          <a href="${item.url}" target="_blank">${item.url}</a><br>
-          <small>${item.detail}</small><br>
-          <small>追加日時：${item.time}</small>
-        </div>
+        <strong>${item.title}</strong><br>
+        <a href="${item.url}" target="_blank">${item.url}</a><br>
+        <small>${item.detail}</small><br>
+        <small>追加日時：${item.time}</small><br>
         <button class="delete-btn" onclick="deleteUrl(${item.index})" style="display:${canEdit ? "inline-block" : "none"}">削除</button>
       `;
       list.appendChild(card);
