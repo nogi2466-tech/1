@@ -1,695 +1,544 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>tetsudo-site2</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>tetsudo-site2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    :root {
-      --color-keio: #8e44ad;
-      --color-jr: #27ae60;
-      --color-ote: #e74c3c;
-      --color-chika: #2980b9;
-      --color-etc: #7f8c8d;
-      --color-data: #f1c40f;
-      --color-img: #d35400;
-    }
+<style>
+:root {
+  --color-keio:#8e44ad;
+  --color-jr:#27ae60;
+  --color-ote:#e74c3c;
+  --color-chika:#2980b9;
+  --color-etc:#7f8c8d;
+  --color-data:#f1c40f;
+  --color-img:#d35400;
+}
 
-    body {
-      margin: 0;
-      background: #0f0f0f;
-      color: #eee;
-      font-family: system-ui, sans-serif;
-    }
+/* ダークモード */
+body {
+  margin:0;
+  background:#0f0f0f;
+  color:#eee;
+  font-family:system-ui;
+}
 
-    body.light {
-      background: #f5f5f5;
-      color: #222;
-    }
+/* ライトモード */
+body.light {
+  background:#f5f5f5;
+  color:#222;
+}
+body.light .card,
+body.light .item,
+body.light .modal {
+  background:#fff;
+  color:#222;
+}
+body.light .nav {
+  background:#e0e0e0;
+}
+body.light .nav button {
+  background:#ccc;
+  color:#222;
+}
+body.light .nav button.active {
+  background:#0099ff;
+  color:#fff;
+}
 
-    body.light .card,
-    body.light .item,
-    body.light .modal {
-      background: #ffffff;
-      color: #222;
-    }
+header {
+  background:#0066cc;
+  padding:14px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+  color:#fff;
+}
 
-    body.light .nav {
-      background: #e0e0e0;
-    }
+/* ナビゲーション（中央寄せ＋色分け） */
+.nav {
+  display:flex;
+  gap:10px;
+  padding:14px;
+  background:#1a1a1a;
+  justify-content:center;
+  flex-wrap:wrap;
+}
 
-    body.light .nav button {
-      background: #ccc;
-      color: #222;
-    }
+.nav button {
+  padding:8px 14px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  color:#fff;
+  font-size:14px;
+}
 
-    body.light .nav button.active {
-      background: #0099ff;
-      color: #fff;
-    }
+/* ボタン色分け */
+#nav-all { background:#555; }
+#nav-keio { background:var(--color-keio); }
+#nav-jr { background:var(--color-jr); }
+#nav-ote { background:var(--color-ote); }
+#nav-chika { background:var(--color-chika); }
+#nav-etc { background:var(--color-etc); }
+#nav-data { background:var(--color-data); color:#000; }
+#nav-info { background:#0099ff; }
+#nav-settings { background:#444; }
 
-    header {
-      background: #0066cc;
-      padding: 14px 16px;
-      color: #fff;
-      font-size: 20px;
-      font-weight: bold;
-      text-align: center;
-    }
+.nav button.active {
+  outline:3px solid #fff;
+}
 
-    .nav {
-      display: flex;
-      gap: 12px;
-      background: #1a1a1a;
-      padding: 14px 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
+.section { display:none; padding:16px; }
+.section.active { display:block; }
 
-    .nav button {
-      background: #333;
-      color: #eee;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-    }
+/* URLカード */
+.item {
+  background:#1c1c1c;
+  padding:10px;
+  border-radius:6px;
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between;
+  border-left:6px solid #444;
+}
 
-    .nav button.active {
-      background: #0099ff;
-    }
+.item-title { font-size:15px; font-weight:bold; }
+.item-url { font-size:12px; color:#ccc; }
+.item-detail { font-size:12px; margin-top:4px; }
+.item-category { font-size:11px; opacity:0.8; }
 
-    .section {
-      display: none;
-      padding: 16px;
-    }
+.item-buttons {
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.primary { background:#0099ff; color:#fff; border:none; padding:6px; border-radius:4px; }
+.gray { background:#444; color:#fff; border:none; padding:6px; border-radius:4px; }
+.danger { background:#c33; color:#fff; border:none; padding:6px; border-radius:4px; }
 
-    .section.active {
-      display: block;
-    }
+/* 情報ページ */
+.card {
+  background:#1c1c1c;
+  padding:12px;
+  border-radius:8px;
+  margin-bottom:12px;
+}
 
-    .item {
-      padding: 10px;
-      border-radius: 6px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      color: #fff;
-      background: #1c1c1c;
-      border-left: 6px solid #444;
-    }
+.circle-tabs {
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
 
-    .item-inner {
-      flex: 1;
-    }
+.circle-tab {
+  border-radius:999px;
+  padding:6px 14px;
+  border:1px solid #555;
+  background:#222;
+  color:#eee;
+  cursor:pointer;
+}
 
-    .item-title {
-      font-size: 15px;
-      font-weight: bold;
-    }
+.circle-tab.active {
+  background:#0099ff;
+  border-color:#0099ff;
+}
 
-    .item-url {
-      font-size: 12px;
-      color: #eee;
-      word-break: break-all;
-    }
+.weather-week {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
+}
 
-    .item-detail {
-      font-size: 12px;
-      color: #f0f0f0;
-      margin-top: 4px;
-    }
+.weather-day {
+  background:#222;
+  padding:8px;
+  border-radius:6px;
+  width:120px;
+  text-align:center;
+}
 
-    .item-category {
-      font-size: 11px;
-      margin-top: 4px;
-      opacity: 0.8;
-    }
-
-    .item-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: 80px;
-    }
-
-    .item-buttons button {
-      padding: 6px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-
-    .primary { background: #0099ff; color: #fff; }
-    .danger { background: #cc3333; color: #fff; }
-    .gray { background: #444; color: #fff; }
-
-    .version {
-      margin-top: 20px;
-      font-size: 12px;
-      color: #bbb;
-      text-align: center;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #444;
-      background: #222;
-      color: #eee;
-      margin-bottom: 10px;
-      font-size: 13px;
-    }
-
-    textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-
-    .modal-bg {
-      position: fixed;
-      inset: 0;
-      background: #000a;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    .modal {
-      background: #1c1c1c;
-      padding: 16px;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 420px;
-      box-shadow: 0 8px 24px #000;
-    }
-
-    .modal-title {
-      font-size: 16px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    .modal-buttons {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .card {
-      background: #1c1c1c;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-    }
-
-    .circle-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .circle-tab {
-      border-radius: 999px;
-      padding: 6px 14px;
-      border: 1px solid #555;
-      background: #222;
-      color: #eee;
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    .circle-tab.active {
-      background: #0099ff;
-      border-color: #0099ff;
-    }
-
-    .weather-block {
-      margin-top: 8px;
-      font-size: 14px;
-    }
-
-    .weather-week {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-      justify-content: center;
-    }
-
-    .weather-day {
-      background: #222;
-      padding: 8px;
-      border-radius: 6px;
-      width: 120px;
-      font-size: 12px;
-      text-align: center;
-    }
-  </style>
+/* モーダル */
+.modal-bg {
+  position:fixed;
+  inset:0;
+  background:#000a;
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.modal {
+  background:#1c1c1c;
+  padding:16px;
+  border-radius:8px;
+  width:90%;
+  max-width:420px;
+}
+</style>
 </head>
 
 <body>
-  <header>tetsudo-site2</header>
+<header>tetsudo-site2</header>
 
-  <div class="nav">
-    <button id="nav-all" class="active" onclick="setCategory('all')">すべて</button>
-    <button id="nav-keio" onclick="setCategory('京王')">京王</button>
-    <button id="nav-jr" onclick="setCategory('JR')">JR</button>
-    <button id="nav-ote" onclick="setCategory('大手私鉄')">大手私鉄</button>
-    <button id="nav-chika" onclick="setCategory('地下鉄')">地下鉄</button>
-    <button id="nav-etc" onclick="setCategory('その他')">その他</button>
-    <button id="nav-data" onclick="setCategory('資料')">資料</button>
-    <button id="nav-info" onclick="showSection('info')">情報</button>
-    <button id="nav-settings" onclick="showSection('settings')">設定</button>
+<!-- ナビ -->
+<div class="nav">
+  <button id="nav-all" class="active" onclick="setCategory('all')">すべて</button>
+  <button id="nav-keio" onclick="setCategory('京王')">京王</button>
+  <button id="nav-jr" onclick="setCategory('JR')">JR</button>
+  <button id="nav-ote" onclick="setCategory('大手私鉄')">大手私鉄</button>
+  <button id="nav-chika" onclick="setCategory('地下鉄')">地下鉄</button>
+  <button id="nav-etc" onclick="setCategory('その他')">その他</button>
+  <button id="nav-data" onclick="setCategory('資料')">資料</button>
+  <button id="nav-info" onclick="showSection('info')">情報</button>
+  <button id="nav-settings" onclick="showSection('settings')">設定</button>
+</div>
+
+<!-- URL一覧 -->
+<section id="section-urls" class="section active">
+  <div id="urlList"></div>
+</section>
+
+<!-- 情報 -->
+<section id="section-info" class="section">
+  <div class="card">
+    <h3>天気情報（東京）</h3>
+    <div class="circle-tabs">
+      <button class="circle-tab active" data-tab="now" onclick="switchWeatherTab('now')">現在</button>
+      <button class="circle-tab" data-tab="today" onclick="switchWeatherTab('today')">今日</button>
+      <button class="circle-tab" data-tab="week" onclick="switchWeatherTab('week')">1週間</button>
+    </div>
+
+    <div id="weather-now">読み込み中...</div>
+    <div id="weather-today" style="display:none;">読み込み中...</div>
+    <div id="weather-week" style="display:none;">読み込み中...</div>
   </div>
 
-  <section id="section-urls" class="section active">
-    <div id="urlList"></div>
-  </section>
+  <div class="card">
+    <h3>現在時刻</h3>
+    <div id="datetime">読み込み中...</div>
+  </div>
+</section>
 
-  <section id="section-info" class="section">
-    <div class="card">
-      <h3>天気情報（東京）</h3>
-      <div class="circle-tabs">
-        <button class="circle-tab active" data-tab="now" onclick="switchWeatherTab('now')">現在</button>
-        <button class="circle-tab" data-tab="today" onclick="switchWeatherTab('today')">今日</button>
-        <button class="circle-tab" data-tab="week" onclick="switchWeatherTab('week')">1週間</button>
-      </div>
-
-      <div id="weather-now" class="weather-block">読み込み中...</div>
-      <div id="weather-today" class="weather-block" style="display:none;">読み込み中...</div>
-      <div id="weather-week" class="weather-block" style="display:none;">読み込み中...</div>
-    </div>
-
-    <div class="card">
-      <h3>現在時刻</h3>
-      <div id="datetime">読み込み中...</div>
-    </div>
-  </section>
-
-  <section id="section-settings" class="section">
-    <div class="card">
-      <h3>クラウド同期</h3>
-      <button class="primary" onclick="cloudSave()">クラウド保存</button>
-      <button class="gray" onclick="cloudLoad()">クラウド受信</button>
-    </div>
-
-    <div class="card">
-      <h3>URL追加（パスワード必要）</h3>
-      <p style="font-size:12px; opacity:0.9;">パスワード：0829</p>
-      <input id="passInput" type="password" placeholder="パスワードを入力">
-      <button class="primary" onclick="checkPass()">認証</button>
-      <button id="openAddBtn" class="gray" style="margin-top:8px; display:none;" onclick="openAddModal()">新規追加画面を開く</button>
-    </div>
-
-    <div class="card">
-      <h3>テーマ切り替え</h3>
-      <button class="primary" onclick="toggleTheme()">ライト / ダーク切り替え</button>
-    </div>
-
-    <div class="version">
-      バージョン: <span id="versionText"></span>
-    </div>
-  </section>
-
-  <div id="modalBg" class="modal-bg">
-    <div class="modal">
-      <div class="modal-title" id="modalTitle">新規追加</div>
-
-      <input id="formTitle" placeholder="タイトル">
-      <input id="formUrl" placeholder="URL">
-      <textarea id="formDetail" placeholder="詳細"></textarea>
-
-      <select id="formCategory">
-        <option value="京王">京王</option>
-        <option value="JR">JR</option>
-        <option value="大手私鉄">大手私鉄</option>
-        <option value="地下鉄">地下鉄</option>
-        <option value="その他">その他</option>
-        <option value="資料">資料</option>
-        <option value="画像">画像</option>
-      </select>
-
-      <div class="modal-buttons">
-        <button class="gray" onclick="closeModal()">閉じる</button>
-        <button class="primary" onclick="submitModal()">追加する</button>
-      </div>
-    </div>
+<!-- 設定 -->
+<section id="section-settings" class="section">
+  <div class="card">
+    <h3>クラウド同期</h3>
+    <button class="primary" onclick="cloudSave()">クラウド保存</button>
+    <button class="gray" onclick="cloudLoad()">クラウド受信</button>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+  <div class="card">
+    <h3>URL追加（パスワード必要）</h3>
+    <p>パスワード：0829</p>
+    <input id="passInput" type="password" placeholder="パスワードを入力">
+    <button class="primary" onclick="checkPass()">認証</button>
+    <button id="openAddBtn" class="gray" style="display:none;" onclick="openAddModal()">新規追加画面を開く</button>
+  </div>
 
-    const firebaseConfig = {
-      apiKey: "d47572a1cd7e50746a614ef286b5375c",
-      authDomain: "tetsudo-site6.firebaseapp.com",
-      databaseURL: "https://tetsudo-site6-default-rtdb.firebaseio.com",
-      projectId: "tetsudo-site6",
-      storageBucket: "tetsudo-site6.firebasestorage.app",
-      messagingSenderId: "563943849207",
-      appId: "1:563943849207:web:1c813365201cb431d6e7f2"
-    };
+  <div class="card">
+    <h3>テーマ切り替え</h3>
+    <button class="primary" onclick="toggleTheme()">ライト / ダーク切り替え</button>
+  </div>
+</section>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase();
-    const auth = getAuth();
+<!-- モーダル -->
+<div id="modalBg" class="modal-bg">
+  <div class="modal">
+    <h3 id="modalTitle">新規追加</h3>
 
-    const version = "2.0";
-    document.getElementById("versionText").textContent = version;
+    <input id="formTitle" placeholder="タイトル">
+    <input id="formUrl" placeholder="URL">
+    <textarea id="formDetail" placeholder="詳細"></textarea>
 
-    let urls = JSON.parse(localStorage.getItem("urls") || "[]");
-    let currentCategory = "all";
-    let editIndex = null;
+    <select id="formCategory">
+      <option value="京王">京王</option>
+      <option value="JR">JR</option>
+      <option value="大手私鉄">大手私鉄</option>
+      <option value="地下鉄">地下鉄</option>
+      <option value="その他">その他</option>
+      <option value="資料">資料</option>
+      <option value="画像">画像</option>
+    </select>
 
-    function showSection(name) {
-      document.getElementById("section-urls").classList.remove("active");
-      document.getElementById("section-info").classList.remove("active");
-      document.getElementById("section-settings").classList.remove("active");
+    <div style="text-align:right; margin-top:10px;">
+      <button class="gray" onclick="closeModal()">閉じる</button>
+      <button class="primary" onclick="submitModal()">追加する</button>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
-      document.querySelectorAll(".nav button").forEach(btn => btn.classList.remove("active"));
+const firebaseConfig = {
+  apiKey:"d47572a1cd7e50746a614ef286b5375c",
+  authDomain:"tetsudo-site6.firebaseapp.com",
+  databaseURL:"https://tetsudo-site6-default-rtdb.firebaseio.com",
+  projectId:"tetsudo-site6",
+  storageBucket:"tetsudo-site6.firebasestorage.app",
+  messagingSenderId:"563943849207",
+  appId:"1:563943849207:web:1c813365201cb431d6e7f2"
+};
 
-      if (name === "info") {
-        document.getElementById("section-info").classList.add("active");
-        document.getElementById("nav-info").classList.add("active");
-      } else if (name === "settings") {
-        document.getElementById("section-settings").classList.add("active");
-        document.getElementById("nav-settings").classList.add("active");
-      } else {
-        document.getElementById("section-urls").classList.add("active");
-        document.getElementById("nav-" + (name === "all" ? "all" : name)).classList.add("active");
-      }
-    }
+const app = initializeApp(firebaseConfig);
+const db = getDatabase();
+const auth = getAuth();
 
-    function setCategory(cat) {
-      currentCategory = cat;
-      showSection("urls");
+let urls = JSON.parse(localStorage.getItem("urls") || "[]");
+let currentCategory = "all";
+let editIndex = null;
 
-      document.querySelectorAll(".nav button").forEach(btn => btn.classList.remove("active"));
-      document.getElementById("nav-" + (cat === "all" ? "all" : cat)).classList.add("active");
+/* 画面切り替え */
+function showSection(name){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
 
-      render();
-    }
+  if(name==="info"){
+    document.getElementById("section-info").classList.add("active");
+    document.getElementById("nav-info").classList.add("active");
+  }else if(name==="settings"){
+    document.getElementById("section-settings").classList.add("active");
+    document.getElementById("nav-settings").classList.add("active");
+  }else{
+    document.getElementById("section-urls").classList.add("active");
+    document.getElementById("nav-"+(name==="all"?"all":name)).classList.add("active");
+  }
+}
 
-    function categoryBorderColor(cat) {
-      switch (cat) {
-        case "京王": return "var(--color-keio)";
-        case "JR": return "var(--color-jr)";
-        case "大手私鉄": return "var(--color-ote)";
-        case "地下鉄": return "var(--color-chika)";
-        case "その他": return "var(--color-etc)";
-        case "資料": return "var(--color-data)";
-        case "画像": return "var(--color-img)";
-        default: return "#444";
-      }
-    }
+/* カテゴリ切り替え */
+function setCategory(cat){
+  currentCategory = cat;
+  showSection("urls");
+  render();
+}
 
-    function render() {
-      const list = document.getElementById("urlList");
-      list.innerHTML = "";
+/* カード色 */
+function categoryBorderColor(cat){
+  return {
+    "京王":"var(--color-keio)",
+    "JR":"var(--color-jr)",
+    "大手私鉄":"var(--color-ote)",
+    "地下鉄":"var(--color-chika)",
+    "その他":"var(--color-etc)",
+    "資料":"var(--color-data)",
+    "画像":"var(--color-img)"
+  }[cat] || "#444";
+}
 
-      let filtered = urls;
-      if (currentCategory !== "all") {
-        filtered = urls.filter(u => u.category === currentCategory);
-      }
+/* URL描画 */
+function render(){
+  const list = document.getElementById("urlList");
+  list.innerHTML = "";
 
-      filtered = filtered.slice().sort((a, b) =>
-        a.title.localeCompare(b.title, "ja")
-      );
+  let filtered = currentCategory==="all" ? urls : urls.filter(u=>u.category===currentCategory);
 
-      filtered.forEach((item, index) => {
-        const div = document.createElement("div");
-        div.className = "item";
-        div.style.borderLeftColor = categoryBorderColor(item.category);
+  filtered.sort((a,b)=>a.title.localeCompare(b.title,"ja"));
 
-        const inner = document.createElement("div");
-        inner.className = "item-inner";
-        inner.innerHTML = `
-          <div class="item-title">${item.title}</div>
-          <div class="item-url">${item.url}</div>
-          <div class="item-detail">${item.detail || ""}</div>
-          <div class="item-category">カテゴリ: ${item.category}</div>
-        `;
+  filtered.forEach((item,index)=>{
+    const div = document.createElement("div");
+    div.className="item";
+    div.style.borderLeftColor = categoryBorderColor(item.category);
 
-        const btns = document.createElement("div");
-        btns.className = "item-buttons";
-        btns.innerHTML = `
-          <button class="gray" onclick="openEditModal(${index})">編集</button>
-          <button class="danger" onclick="removeUrl(${index})">削除</button>
-        `;
+    div.innerHTML = `
+      <div class="item-inner">
+        <div class="item-title">${item.title}</div>
+        <div class="item-url">${item.url}</div>
+        <div class="item-detail">${item.detail||""}</div>
+        <div class="item-category">カテゴリ: ${item.category}</div>
+      </div>
+      <div class="item-buttons">
+        <button class="gray" onclick="openEditModal(${index})">編集</button>
+        <button class="danger" onclick="removeUrl(${index})">削除</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
 
-        div.appendChild(inner);
-        div.appendChild(btns);
-        list.appendChild(div);
-      });
-    }
+/* パスワード */
+window.checkPass = function(){
+  if(document.getElementById("passInput").value==="0829"){
+    document.getElementById("openAddBtn").style.display="inline-block";
+    alert("認証成功");
+  }else alert("違います");
+};
 
-    window.checkPass = function() {
-      const pass = document.getElementById("passInput").value;
-      if (pass === "0829") {
-        document.getElementById("openAddBtn").style.display = "inline-block";
-        alert("認証成功：新規追加画面を開けます");
-      } else {
-        alert("パスワードが違います");
-      }
-    };
+/* モーダル */
+window.openAddModal = function(){
+  editIndex=null;
+  document.getElementById("modalTitle").textContent="新規追加";
+  document.getElementById("formTitle").value="";
+  document.getElementById("formUrl").value="";
+  document.getElementById("formDetail").value="";
+  document.getElementById("formCategory").value="京王";
+  document.getElementById("modalBg").style.display="flex";
+};
 
-    window.openAddModal = function() {
-      editIndex = null;
-      document.getElementById("modalTitle").textContent = "新規追加";
-      document.getElementById("formTitle").value = "";
-      document.getElementById("formUrl").value = "";
-      document.getElementById("formDetail").value = "";
-      document.getElementById("formCategory").value = "京王";
-      document.getElementById("modalBg").style.display = "flex";
-      document.querySelector(".modal-buttons .primary").textContent = "追加する";
-    };
+window.openEditModal = function(i){
+  editIndex=i;
+  const item=urls[i];
+  document.getElementById("modalTitle").textContent="編集";
+  document.getElementById("formTitle").value=item.title;
+  document.getElementById("formUrl").value=item.url;
+  document.getElementById("formDetail").value=item.detail;
+  document.getElementById("formCategory").value=item.category;
+  document.getElementById("modalBg").style.display="flex";
+};
 
-    window.openEditModal = function(index) {
-      editIndex = index;
-      const item = urls[index];
+window.closeModal = ()=>document.getElementById("modalBg").style.display="none";
 
-      document.getElementById("modalTitle").textContent = "編集";
-      document.getElementById("formTitle").value = item.title;
-      document.getElementById("formUrl").value = item.url;
-      document.getElementById("formDetail").value = item.detail || "";
-      document.getElementById("formCategory").value = item.category;
+/* 追加・編集 */
+window.submitModal = function(){
+  const title=document.getElementById("formTitle").value.trim();
+  const url=document.getElementById("formUrl").value.trim();
+  const detail=document.getElementById("formDetail").value.trim();
+  const category=document.getElementById("formCategory").value;
 
-      document.getElementById("modalBg").style.display = "flex";
-      document.querySelector(".modal-buttons .primary").textContent = "保存する";
-    };
+  if(!title||!url){ alert("必須です"); return; }
 
-    window.closeModal = function() {
-      document.getElementById("modalBg").style.display = "none";
-    };
+  const data={title,url,detail,category};
 
-    window.submitModal = function() {
-      const title = document.getElementById("formTitle").value.trim();
-      const url = document.getElementById("formUrl").value.trim();
-      const detail = document.getElementById("formDetail").value.trim();
-      const category = document.getElementById("formCategory").value;
+  if(editIndex===null) urls.push(data);
+  else urls[editIndex]=data;
 
-      if (!title || !url) {
-        alert("タイトルとURLは必須です");
-        return;
-      }
+  localStorage.setItem("urls",JSON.stringify(urls));
+  cloudSave(true);
+  render();
+  closeModal();
+};
 
-      const data = { title, url, detail, category };
+/* 削除 */
+window.removeUrl = function(i){
+  if(!confirm("削除しますか？")) return;
+  urls.splice(i,1);
+  localStorage.setItem("urls",JSON.stringify(urls));
+  cloudSave(true);
+  render();
+};
 
-      if (editIndex === null) {
-        urls.push(data);
-      } else {
-        urls[editIndex] = data;
-      }
+/* Firebase保存 */
+window.cloudSave = function(silent=false){
+  set(ref(db,"urlData"),urls).then(()=>{
+    if(!silent) alert("保存しました");
+  });
+};
 
-      localStorage.setItem("urls", JSON.stringify(urls));
-      cloudSave(true);
-      render();
-      closeModal();
-    };
+/* Firebase受信 */
+window.cloudLoad = function(){
+  onValue(ref(db,"urlData"),snap=>{
+    urls=snap.val()||[];
+    localStorage.setItem("urls",JSON.stringify(urls));
+    render();
+  });
+};
 
-    window.removeUrl = function(index) {
-      if (!confirm("削除しますか？")) return;
+/* 天気 */
+const key="d47572a1cd7e50746a614ef286b5375c";
+const lat=35.68, lon=139.76;
 
-      urls.splice(index, 1);
-      localStorage.setItem("urls", JSON.stringify(urls));
-      cloudSave(true);
-      render();
-    };
+async function loadCurrentWeather(){
+  const el=document.getElementById("weather-now");
+  try{
+    const r=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${key}&lang=ja&units=metric`);
+    const d=await r.json();
+    el.innerHTML=`
+      <div style="text-align:center;">
+        <img src="https://openweathermap.org/img/wn/${d.weather[0].icon}@4x.png" width="80">
+        <div>${d.weather[0].description}</div>
+        <div>${d.main.temp}℃</div>
+      </div>`;
+  }catch{ el.textContent="失敗"; }
+}
 
-    window.cloudSave = function(silent = false) {
-      const dataRef = ref(db, "urlData");
-      set(dataRef, urls)
-        .then(() => {
-          if (!silent) alert("クラウド保存しました");
-        })
-        .catch(() => {
-          alert("クラウド保存に失敗しました");
-        });
-    };
+async function loadTodayWeather(){
+  const el=document.getElementById("weather-today");
+  try{
+    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${key}&lang=ja&units=metric`);
+    const d=await r.json();
+    const t=d.daily[0];
+    el.innerHTML=`
+      <div style="text-align:center;">
+        <img src="https://openweathermap.org/img/wn/${t.weather[0].icon}@4x.png" width="80">
+        <div>${t.weather[0].description}</div>
+        <div>${t.temp.max}℃ / ${t.temp.min}℃</div>
+        <div>降水確率 ${Math.round(t.pop*100)}%</div>
+      </div>`;
+  }catch{ el.textContent="失敗"; }
+}
 
-    window.cloudLoad = function() {
-      const dataRef = ref(db, "urlData");
-      onValue(
-        dataRef,
-        (snapshot) => {
-          const data = snapshot.val();
-          urls = data || [];
-          localStorage.setItem("urls", JSON.stringify(urls));
-          render();
-          alert("クラウドから受信しました");
-        },
-        () => {
-          alert("受信に失敗しました");
-        }
-      );
-    };
+async function loadWeeklyWeather(){
+  const el=document.getElementById("weather-week");
+  try{
+    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${key}&lang=ja&units=metric`);
+    const d=await r.json();
+    const days=d.daily.slice(0,7);
 
-    const weatherApiKey = "d47572a1cd7e50746a614ef286b5375c";
-    const lat = 35.68;
-    const lon = 139.76;
+    const wrap=document.createElement("div");
+    wrap.className="weather-week";
 
-    async function loadCurrentWeather() {
-      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`;
-      const el = document.getElementById("weather-now");
+    days.forEach((day,i)=>{
+      const dt=new Date(day.dt*1000);
+      const label=i===0?"今日":`${dt.getMonth()+1}/${dt.getDate()}`;
 
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-
-        const icon = data.weather[0].icon;
-        const weather = data.weather[0].description;
-        const temp = data.main.temp;
-
-        el.innerHTML = `
-          <div style="display:flex; gap:20px; align-items:center; justify-content:center;">
-            <img src="https://openweathermap.org/img/wn/${icon}@4x.png" style="width:80px;">
-            <div>
-              現在の天気：${weather}<br>
-              気温：${temp}℃
-            </div>
-          </div>
-        `;
-      } catch {
-        el.textContent = "取得失敗";
-      }
-    }
-
-    async function loadTodayWeather() {
-      const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric&exclude=minutely,hourly`;
-      const el = document.getElementById("weather-today");
-
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-
-        const today = data.daily[0];
-        const icon = today.weather[0].icon;
-        const weather = today.weather[0].description;
-        const tempMax = today.temp.max;
-        const tempMin = today.temp.min;
-        const pop = Math.round((today.pop || 0) * 100);
-
-        el.innerHTML = `
-          <div style="display:flex; gap:20px; align-items:center; justify-content:center;">
-            <img src="https://openweathermap.org/img/wn/${icon}@4x.png" style="width:80px;">
-            <div>
-              今日の天気：${weather}<br>
-              最高気温：${tempMax}℃　最低気温：${tempMin}℃<br>
-              降水確率：${pop}%
-            </div>
-          </div>
-        `;
-      } catch {
-        el.textContent = "取得失敗";
-      }
-    }
-
-    async function loadWeeklyWeather() {
-      const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric&exclude=minutely,hourly`;
-      const el = document.getElementById("weather-week");
-
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-
-        const days = data.daily.slice(0, 7);
-        const container = document.createElement("div");
-        container.className = "weather-week";
-
-        days.forEach((d, i) => {
-          const date = new Date(d.dt * 1000);
-          const label = `${date.getMonth() + 1}/${date.getDate()}`;
-          const icon = d.weather[0].icon;
-          const weather = d.weather[0].description;
-          const tempMax = d.temp.max;
-          const tempMin = d.temp.min;
-
-          const dayEl = document.createElement("div");
-          dayEl.className = "weather-day";
-          dayEl.innerHTML = `
-            <div>${i === 0 ? "今日" : label}</div>
-            <img src="https://openweathermap.org/img/wn/${icon}.png" style="width:40px;"><br>
-            ${weather}<br>
-            ${tempMax}℃ / ${tempMin}℃
-          `;
-          container.appendChild(dayEl);
-        });
-
-        el.innerHTML = "";
-        el.appendChild(container);
-      } catch {
-        el.textContent = "取得失敗";
-      }
-    }
-
-    window.switchWeatherTab = function(tab) {
-      document.querySelectorAll(".circle-tab").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.tab === tab);
-      });
-
-      document.getElementById("weather-now").style.display = tab === "now" ? "block" : "none";
-      document.getElementById("weather-today").style.display = tab === "today" ? "block" : "none";
-      document.getElementById("weather-week").style.display = tab === "week" ? "block" : "none";
-    };
-
-    function startClock() {
-      setInterval(() => {
-        const now = new Date();
-        document.getElementById("datetime").textContent =
-          `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 `
-          + `${now.getHours()}時${String(now.getMinutes()).padStart(2,"0")}分${String(now.getSeconds()).padStart(2,"0")}秒`;
-      }, 1000);
-    }
-
-    function toggleTheme() {
-      document.body.classList.toggle("light");
-      localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
-    }
-
-    if (localStorage.getItem("theme") === "light") {
-      document.body.classList.add("light");
-    }
-
-    signInAnonymously(auth).then(() => {
-      cloudLoad();
+      const box=document.createElement("div");
+      box.className="weather-day";
+      box.innerHTML=`
+        <div>${label}</div>
+        <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}.png" width="40">
+        <div>${day.weather[0].description}</div>
+        <div>${day.temp.max}℃ / ${day.temp.min}℃</div>
+      `;
+      wrap.appendChild(box);
     });
 
-    render();
-    startClock();
-    loadCurrentWeather();
-    loadTodayWeather();
-    loadWeeklyWeather();
-  </script>
+    el.innerHTML="";
+    el.appendChild(wrap);
+  }catch{ el.textContent="失敗"; }
+}
+
+/* 天気タブ切り替え */
+window.switchWeatherTab = function(tab){
+  document.querySelectorAll(".circle-tab").forEach(b=>{
+    b.classList.toggle("active", b.dataset.tab===tab);
+  });
+
+  document.getElementById("weather-now").style.display = tab==="now"?"block":"none";
+  document.getElementById("weather-today").style.display = tab==="today"?"block":"none";
+  document.getElementById("weather-week").style.display = tab==="week"?"block":"none";
+};
+
+/* 時計 */
+function startClock(){
+  setInterval(()=>{
+    const now=new Date();
+    document.getElementById("datetime").textContent=
+      `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 `
+      +`${now.getHours()}時${String(now.getMinutes()).padStart(2,"0")}分${String(now.getSeconds()).padStart(2,"0")}秒`;
+  },1000);
+}
+
+/* テーマ切り替え */
+window.toggleTheme = function(){
+  document.body.classList.toggle("light");
+  localStorage.setItem("theme",document.body.classList.contains("light")?"light":"dark");
+};
+
+if(localStorage.getItem("theme")==="light"){
+  document.body.classList.add("light");
+}
+
+/* 初期化 */
+signInAnonymously(auth).then(()=>cloudLoad());
+render();
+startClock();
+loadCurrentWeather();
+loadTodayWeather();
+loadWeeklyWeather();
+</script>
 </body>
 </html>
