@@ -176,7 +176,13 @@ header {
   padding:16px;
   border-radius:8px;
   width:90%;
-  max-width:420px;
+  max-width:360px;   /* ★ はみ出し防止 */
+  box-sizing:border-box;
+}
+
+textarea {
+  min-height:80px;
+  resize:none;       /* ★ 枠をいじれないように */
 }
 </style>
 </head>
@@ -292,6 +298,21 @@ const auth = getAuth();
 let urls = JSON.parse(localStorage.getItem("urls") || "[]");
 let currentCategory = "all";
 let editIndex = null;
+let isAuthed = false;
+
+/* ナビID変換 */
+function navIdForCategory(cat){
+  switch(cat){
+    case "all": return "nav-all";
+    case "京王": return "nav-keio";
+    case "JR": return "nav-jr";
+    case "大手私鉄": return "nav-ote";
+    case "地下鉄": return "nav-chika";
+    case "その他": return "nav-etc";
+    case "資料": return "nav-data";
+    default: return "nav-all";
+  }
+}
 
 /* 画面切り替え */
 function showSection(name){
@@ -306,16 +327,23 @@ function showSection(name){
     document.getElementById("nav-settings").classList.add("active");
   }else{
     document.getElementById("section-urls").classList.add("active");
-    document.getElementById("nav-"+(name==="all"?"all":name)).classList.add("active");
+    document.getElementById("nav-all").classList.add("active");
   }
 }
+window.showSection = showSection;
 
 /* カテゴリ切り替え */
 function setCategory(cat){
   currentCategory = cat;
+
   showSection("urls");
+
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+  document.getElementById(navIdForCategory(cat)).classList.add("active");
+
   render();
 }
+window.setCategory = setCategory;
 
 /* カード色 */
 function categoryBorderColor(cat){
@@ -336,13 +364,20 @@ function render(){
   list.innerHTML = "";
 
   let filtered = currentCategory==="all" ? urls : urls.filter(u=>u.category===currentCategory);
-
   filtered.sort((a,b)=>a.title.localeCompare(b.title,"ja"));
 
   filtered.forEach((item,index)=>{
     const div = document.createElement("div");
     div.className="item";
     div.style.borderLeftColor = categoryBorderColor(item.category);
+
+    let buttonsHtml = "";
+    if(isAuthed){
+      buttonsHtml = `
+        <button class="gray" onclick="openEditModal(${index})">編集</button>
+        <button class="danger" onclick="removeUrl(${index})">削除</button>
+      `;
+    }
 
     div.innerHTML = `
       <div class="item-inner">
@@ -351,21 +386,22 @@ function render(){
         <div class="item-detail">${item.detail||""}</div>
         <div class="item-category">カテゴリ: ${item.category}</div>
       </div>
-      <div class="item-buttons">
-        <button class="gray" onclick="openEditModal(${index})">編集</button>
-        <button class="danger" onclick="removeUrl(${index})">削除</button>
-      </div>
+      <div class="item-buttons">${buttonsHtml}</div>
     `;
     list.appendChild(div);
   });
 }
 
-/* パスワード */
+/* パスワード認証 */
 window.checkPass = function(){
   if(document.getElementById("passInput").value==="0829"){
+    isAuthed = true;
     document.getElementById("openAddBtn").style.display="inline-block";
     alert("認証成功");
-  }else alert("違います");
+    render();
+  }else{
+    alert("違います");
+  }
 };
 
 /* モーダル */
