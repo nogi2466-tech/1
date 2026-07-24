@@ -2,23 +2,32 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>聖介の鉄道URLアプリ</title>
+  <title>聖介の鉄道サイト</title>
   <style>
     body { font-family: system-ui, sans-serif; margin: 0; padding: 0; background: #111; color: #eee; }
-    header { background: #222; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
+    header { background: #1b1b1b; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
     header h1 { font-size: 18px; margin: 0; }
     main { padding: 16px; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-    .tab { padding: 6px 10px; border-radius: 4px; background: #333; cursor: pointer; font-size: 13px; }
-    .tab.active { background: #0078d4; }
+
+    .nav { display: flex; gap: 8px; }
+    .nav button { padding: 6px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 13px; background: #333; color: #eee; }
+    .nav button.active { background: #0078d4; }
+
     .section { display: none; }
     .section.active { display: block; }
+
     .toolbar { margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
     button { padding: 6px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 13px; }
     button.primary { background: #0078d4; color: #fff; }
     button.danger { background: #c0392b; color: #fff; }
     button.gray { background: #444; color: #fff; }
+
     input, select { padding: 6px 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: #eee; font-size: 13px; }
+
+    .tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+    .tabs button { background: #222; color: #eee; border-radius: 4px; padding: 4px 8px; border: 1px solid #333; font-size: 12px; }
+    .tabs button.active { background: #0078d4; border-color: #0078d4; }
+
     .list { margin-top: 8px; }
     .item { padding: 8px; margin-bottom: 6px; background: #1c1c1c; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
     .item-main { max-width: 70%; }
@@ -26,22 +35,23 @@
     .item-url { font-size: 12px; color: #aaa; }
     .item-category { font-size: 11px; color: #ccc; margin-top: 2px; }
     .item-buttons { display: flex; gap: 4px; }
-    .info-card { background: #1c1c1c; padding: 10px; border-radius: 4px; margin-bottom: 10px; }
-    .info-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+
+    .card { background: #1c1c1c; padding: 12px; border-radius: 6px; margin-bottom: 12px; }
+    .card-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
   </style>
 </head>
 <body>
   <header>
-    <h1>聖介の鉄道URLアプリ</h1>
-    <div>
-      <button class="gray" onclick="showSection('urls')">URL一覧</button>
-      <button class="gray" onclick="showSection('info')">情報</button>
-      <button class="gray" onclick="showSection('settings')">設定</button>
+    <h1>聖介の鉄道サイト</h1>
+    <div class="nav">
+      <button id="nav-urls" class="active" onclick="showSection('urls')">URL一覧</button>
+      <button id="nav-info" onclick="showSection('info')">情報</button>
+      <button id="nav-settings" onclick="showSection('settings')">同期・管理</button>
     </div>
   </header>
 
   <main>
-    <!-- URL一覧セクション -->
+    <!-- URL一覧 -->
     <section id="section-urls" class="section active">
       <div class="toolbar">
         <input id="newTitle" type="text" placeholder="タイトル">
@@ -50,37 +60,47 @@
           <option value="京王">京王</option>
           <option value="JR">JR</option>
           <option value="大手私鉄">大手私鉄</option>
+          <option value="地下鉄">地下鉄</option>
           <option value="その他">その他</option>
+          <option value="資料">資料</option>
+          <option value="画像">画像</option>
         </select>
         <button class="primary" onclick="addUrl()">追加</button>
-        <button class="gray" onclick="filterCategory('all')">すべて</button>
-        <button class="gray" onclick="filterCategory('京王')">京王</button>
-        <button class="gray" onclick="filterCategory('JR')">JR</button>
-        <button class="gray" onclick="filterCategory('大手私鉄')">大手私鉄</button>
-        <button class="gray" onclick="filterCategory('その他')">その他</button>
       </div>
+
+      <div class="tabs">
+        <button id="tab-all" class="active" onclick="filterCategory('all')">すべて</button>
+        <button onclick="filterCategory('京王')">京王</button>
+        <button onclick="filterCategory('JR')">JR</button>
+        <button onclick="filterCategory('大手私鉄')">大手私鉄</button>
+        <button onclick="filterCategory('地下鉄')">地下鉄</button>
+        <button onclick="filterCategory('その他')">その他</button>
+        <button onclick="filterCategory('資料')">資料</button>
+        <button onclick="filterCategory('画像')">画像</button>
+      </div>
+
       <div id="urlList" class="list"></div>
     </section>
 
-    <!-- 情報セクション（天気＋時刻） -->
+    <!-- 情報（天気＋時刻） -->
     <section id="section-info" class="section">
-      <div class="info-card">
-        <div class="info-title">現在の天気（東京）</div>
+      <div class="card">
+        <div class="card-title">現在の天気（東京）</div>
         <div id="weather">読み込み中...</div>
+        <button class="primary" style="margin-top:8px;" onclick="loadWeather()">天気を更新</button>
       </div>
-      <div class="info-card">
-        <div class="info-title">現在時刻</div>
+      <div class="card">
+        <div class="card-title">現在時刻</div>
         <div id="datetime">読み込み中...</div>
       </div>
-      <button class="primary" onclick="loadWeather()">天気を更新</button>
     </section>
 
-    <!-- 設定セクション（クラウド保存・受信） -->
+    <!-- 同期・管理（クラウド保存・受信） -->
     <section id="section-settings" class="section">
-      <div class="info-card">
-        <div class="info-title">クラウド同期</div>
+      <div class="card">
+        <div class="card-title">クラウド同期</div>
         <p style="font-size:12px; color:#ccc;">
-          URL一覧をクラウド（Googleスプレッドシート）に保存し、他のデバイスで同じ状態を受信できます。
+          URL一覧をクラウド（Googleスプレッドシート）に保存し、他の端末から受信して同じ状態にできます。
         </p>
         <button class="primary" onclick="cloudSave()">クラウド保存</button>
         <button class="gray" onclick="cloudLoad()">クラウド受信</button>
@@ -89,8 +109,9 @@
   </main>
 
   <script>
-    // ====== データ管理 ======
+    // ===== データ管理 =====
     let urls = [];
+    let currentCategory = "all";
 
     function loadLocal() {
       const saved = localStorage.getItem("urls");
@@ -105,10 +126,12 @@
     function render() {
       const list = document.getElementById("urlList");
       list.innerHTML = "";
+
       const filtered = urls.filter(item => {
         if (currentCategory === "all") return true;
         return item.category === currentCategory;
       });
+
       filtered.forEach((item, index) => {
         const div = document.createElement("div");
         div.className = "item";
@@ -172,7 +195,7 @@
       if (newTitle === null) return;
       const newUrl = prompt("URLを入力", item.url);
       if (newUrl === null) return;
-      const newCategory = prompt("カテゴリを入力（京王 / JR / 大手私鉄 / その他）", item.category);
+      const newCategory = prompt("カテゴリを入力（京王 / JR / 大手私鉄 / 地下鉄 / その他 / 資料 / 画像）", item.category);
       if (newCategory === null) return;
 
       urls[index] = {
@@ -195,23 +218,33 @@
       render();
     }
 
-    let currentCategory = "all";
     function filterCategory(cat) {
       currentCategory = cat;
+      document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+      if (cat === "all") {
+        document.getElementById("tab-all").classList.add("active");
+      } else {
+        // 簡易的にボタンのテキストで判定
+        document.querySelectorAll(".tabs button").forEach(b => {
+          if (b.textContent === cat) b.classList.add("active");
+        });
+      }
       render();
     }
 
-    // ====== セクション切り替え ======
+    // ===== セクション切り替え =====
     function showSection(name) {
       ["urls", "info", "settings"].forEach(id => {
         document.getElementById("section-" + id).classList.remove("active");
+        document.getElementById("nav-" + id).classList.remove("active");
       });
       document.getElementById("section-" + name).classList.add("active");
+      document.getElementById("nav-" + name).classList.add("active");
     }
 
-    // ====== 天気API ======
+    // ===== 天気API =====
     async function loadWeather() {
-      const apiKey = "d47572a1cd7e50746a614ef286b5375c"; // 聖介のOpenWeather APIキー
+      const apiKey = "d47572a1cd7e50746a614ef286b5375c";
       const url = `https://api.openweathermap.org/data/2.5/weather?q=Tokyo&appid=${apiKey}&lang=ja&units=metric`;
 
       try {
@@ -221,15 +254,25 @@
         const weather = data.weather[0].description;
         const temp = data.main.temp;
         const humidity = data.main.humidity;
+        const icon = data.weather[0].icon;
 
-        document.getElementById("weather").innerHTML =
-          `天気：${weather}<br>気温：${temp}℃<br>湿度：${humidity}%`;
+        document.getElementById("weather").innerHTML = `
+          <div style="display:flex; align-items:center; gap:20px;">
+            <img src="https://openweathermap.org/img/wn/${icon}@4x.png"
+                 style="width:140px; height:140px;">
+            <div style="font-size:26px; line-height:1.7;">
+              天気：${weather}<br>
+              気温：${temp}℃<br>
+              湿度：${humidity}%
+            </div>
+          </div>
+        `;
       } catch (e) {
         document.getElementById("weather").innerText = "天気情報を取得できませんでした";
       }
     }
 
-    // ====== 時刻リアルタイム更新 ======
+    // ===== 時刻リアルタイム更新 =====
     function startClock() {
       setInterval(() => {
         const now = new Date();
@@ -244,7 +287,7 @@
       }, 1000);
     }
 
-    // ====== クラウド保存・受信（GAS） ======
+    // ===== クラウド保存・受信（GAS） =====
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyJVP7mnaKUerEO5CJBf1_DYVcoSoK1MfxJQ3xufcnQufE1oPJ3M3ZvWsB3P-lZFsgskg/exec";
 
     function cloudSave() {
