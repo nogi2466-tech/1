@@ -451,7 +451,7 @@
       render();
     }
 
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyJVP7mnaKUerEO5CJBf1_DYVcoSoK1MfxJQ3xufcnQufE1oPJ3M3ZvWsB3P-lZFsgskg/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzHd97wtSjE-2nAl9frhCnIHMPfyBWXL7sB26qSBUZ1r5zweFnvcY5ELYcmojj81ehBAQ/exec";
 
     function cloudSave(silent = false) {
       fetch(GAS_URL, {
