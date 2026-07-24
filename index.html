@@ -68,12 +68,12 @@ header {
 }
 
 .nav button {
-  padding:8px 14px;
+  padding:10px 18px;
   border:none;
-  border-radius:6px;
+  border-radius:8px;
   cursor:pointer;
   color:#fff;
-  font-size:14px;
+  font-size:15px;
 }
 
 /* ボタン色分け */
@@ -98,50 +98,51 @@ header {
 /* URLカード */
 .item {
   background:#1c1c1c;
-  padding:10px;
-  border-radius:6px;
-  margin-bottom:10px;
+  padding:14px;
+  border-radius:10px;
+  margin-bottom:12px;
   display:flex;
   justify-content:space-between;
   border-left:6px solid #444;
 }
 
-.item-title { font-size:15px; font-weight:bold; }
-.item-url { font-size:12px; color:#ccc; }
-.item-detail { font-size:12px; margin-top:4px; }
-.item-category { font-size:11px; opacity:0.8; }
+.item-title { font-size:17px; font-weight:bold; }
+.item-url { font-size:13px; color:#ccc; }
+.item-detail { font-size:13px; margin-top:4px; }
+.item-category { font-size:12px; opacity:0.8; }
 
 .item-buttons {
   display:flex;
   flex-direction:column;
-  gap:4px;
+  gap:6px;
 }
-.primary { background:#0099ff; color:#fff; border:none; padding:6px; border-radius:4px; }
-.gray { background:#444; color:#fff; border:none; padding:6px; border-radius:4px; }
-.danger { background:#c33; color:#fff; border:none; padding:6px; border-radius:4px; }
+.primary { background:#0099ff; color:#fff; border:none; padding:8px; border-radius:6px; }
+.gray { background:#444; color:#fff; border:none; padding:8px; border-radius:6px; }
+.danger { background:#c33; color:#fff; border:none; padding:8px; border-radius:6px; }
 
 /* 情報ページ */
 .card {
   background:#1c1c1c;
-  padding:12px;
-  border-radius:8px;
-  margin-bottom:12px;
+  padding:16px;
+  border-radius:12px;
+  margin-bottom:16px;
 }
 
 .circle-tabs {
   display:flex;
-  gap:8px;
+  gap:10px;
   justify-content:center;
   flex-wrap:wrap;
 }
 
 .circle-tab {
   border-radius:999px;
-  padding:6px 14px;
+  padding:8px 18px;
   border:1px solid #555;
   background:#222;
   color:#eee;
   cursor:pointer;
+  font-size:14px;
 }
 
 .circle-tab.active {
@@ -152,19 +153,19 @@ header {
 .weather-week {
   display:flex;
   flex-wrap:wrap;
-  gap:8px;
+  gap:10px;
   justify-content:center;
 }
 
 .weather-day {
   background:#222;
-  padding:8px;
-  border-radius:6px;
-  width:120px;
+  padding:10px;
+  border-radius:8px;
+  width:130px;
   text-align:center;
 }
 
-/* モーダル */
+/* モーダル（大型化） */
 .modal-bg {
   position:fixed;
   inset:0;
@@ -172,23 +173,47 @@ header {
   display:none;
   align-items:center;
   justify-content:center;
+  z-index:1000;
 }
+
 .modal {
   background:#1c1c1c;
-  padding:16px;
-  border-radius:8px;
-  width:90%;
-  max-width:360px;
+  padding:20px;
+  border-radius:14px;
+  width:95%;
+  max-width:500px;
   box-sizing:border-box;
 }
 
+.modal h3 {
+  font-size:20px;
+  margin-bottom:12px;
+}
+
+.modal input,
+.modal textarea,
+.modal select {
+  width:100%;
+  padding:12px;
+  border-radius:8px;
+  border:none;
+  background:#2a2a2a;
+  color:#fff;
+  font-size:15px;
+  margin-bottom:12px;
+}
+
 textarea {
-  min-height:80px;
+  min-height:120px;
   resize:none;
 }
-</style>
-</head>
 
+.modal-buttons {
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
+</style>
 <body>
 <header>tetsudo-site2</header>
 
@@ -242,7 +267,6 @@ textarea {
 
   <div class="card">
     <h3>URL追加（パスワード必要）</h3>
-    <p>パスワード：0829</p>
     <input id="passInput" type="password" placeholder="パスワードを入力">
     <button class="primary" onclick="checkPass()">認証</button>
     <button id="openAddBtn" class="gray" style="display:none;" onclick="openAddModal()">新規追加画面を開く</button>
@@ -274,7 +298,7 @@ textarea {
       <option value="よく使う">よく使う</option>
     </select>
 
-    <div style="text-align:right; margin-top:10px;">
+    <div class="modal-buttons">
       <button class="gray" onclick="closeModal()">閉じる</button>
       <button class="primary" onclick="submitModal()">追加する</button>
     </div>
