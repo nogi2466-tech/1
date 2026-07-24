@@ -91,13 +91,6 @@
     .tab-data { background: var(--color-data); color:#000; }
     .tab-img { background: var(--color-img); }
 
-    .card {
-      background: #1c1c1c;
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 12px;
-    }
-
     .item {
       padding: 10px;
       border-radius: 6px;
@@ -177,7 +170,6 @@
       resize: vertical;
     }
 
-    /* 追加・編集用モーダル */
     .modal-bg {
       position: fixed;
       inset: 0;
@@ -232,7 +224,6 @@
     <button id="nav-info" onclick="showSection('info')">情報</button>
     <button id="nav-settings" onclick="showSection('settings')">設定</button>
   </div>
-
   <!-- URL一覧 -->
   <section id="section-urls" class="section active">
     <div class="tabs">
@@ -283,14 +274,15 @@
       バージョン: <span id="versionText"></span>
     </div>
   </section>
-
   <!-- 追加・編集モーダル -->
   <div id="modalBg" class="modal-bg">
     <div class="modal">
       <div class="modal-title" id="modalTitle">新規追加</div>
+
       <input id="formTitle" placeholder="タイトル">
       <input id="formUrl" placeholder="URL">
       <textarea id="formDetail" placeholder="詳細"></textarea>
+
       <select id="formCategory">
         <option value="京王">京王</option>
         <option value="JR">JR</option>
@@ -300,6 +292,7 @@
         <option value="資料">資料</option>
         <option value="画像">画像</option>
       </select>
+
       <div class="modal-buttons">
         <button class="gray" onclick="closeModal()">閉じる</button>
         <button class="primary" onclick="submitModal()">追加する</button>
@@ -313,7 +306,7 @@
 
     let urls = JSON.parse(localStorage.getItem("urls") || "[]");
     let currentCategory = "all";
-    let editIndex = null; // nullなら新規、数字なら編集
+    let editIndex = null;
 
     function showSection(name) {
       ["urls", "info", "settings"].forEach(id => {
@@ -339,12 +332,14 @@
 
     function filterCategory(cat) {
       currentCategory = cat;
+
       document.querySelectorAll(".tabs button").forEach(btn => {
         btn.classList.remove("active");
         if (btn.dataset.cat === cat || (cat === "all" && btn.dataset.cat === "all")) {
           btn.classList.add("active");
         }
       });
+
       render();
     }
 
@@ -405,11 +400,13 @@
     function openEditModal(index) {
       editIndex = index;
       const item = urls[index];
+
       document.getElementById("modalTitle").textContent = "編集";
       document.getElementById("formTitle").value = item.title;
       document.getElementById("formUrl").value = item.url;
       document.getElementById("formDetail").value = item.detail || "";
       document.getElementById("formCategory").value = item.category;
+
       document.getElementById("modalBg").style.display = "flex";
       document.querySelector(".modal-buttons .primary").textContent = "保存する";
     }
@@ -438,19 +435,19 @@
       }
 
       localStorage.setItem("urls", JSON.stringify(urls));
-      cloudSave(true); // 自動保存
+      cloudSave(true);
       render();
       closeModal();
     }
 
     function removeUrl(index) {
       if (!confirm("削除しますか？")) return;
+
       urls.splice(index, 1);
       localStorage.setItem("urls", JSON.stringify(urls));
       cloudSave(true);
       render();
     }
-
     const GAS_URL = "https://script.google.com/macros/s/AKfycbw0dqcuFgttMyaIiMuad_Do_WsKTMNtMlz4LUOxTLPxzxmakuEL7r-9-P-HJ3Gubmr_CQ/exec";
 
     function cloudSave(silent = false) {
