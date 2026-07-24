@@ -14,6 +14,7 @@
   --color-etc:#7f8c8d;
   --color-data:#f1c40f;
   --color-img:#d35400;
+  --color-fav:#ff8800;
 }
 
 /* ダークモード */
@@ -56,7 +57,7 @@ header {
   color:#fff;
 }
 
-/* ナビゲーション（中央寄せ＋色分け） */
+/* ナビゲーション */
 .nav {
   display:flex;
   gap:10px;
@@ -83,6 +84,7 @@ header {
 #nav-chika { background:var(--color-chika); }
 #nav-etc { background:var(--color-etc); }
 #nav-data { background:var(--color-data); color:#000; }
+#nav-fav { background:var(--color-fav); }
 #nav-info { background:#0099ff; }
 #nav-settings { background:#444; }
 
@@ -176,13 +178,13 @@ header {
   padding:16px;
   border-radius:8px;
   width:90%;
-  max-width:360px;   /* ★ はみ出し防止 */
+  max-width:360px;
   box-sizing:border-box;
 }
 
 textarea {
   min-height:80px;
-  resize:none;       /* ★ 枠をいじれないように */
+  resize:none;
 }
 </style>
 </head>
@@ -199,6 +201,7 @@ textarea {
   <button id="nav-chika" onclick="setCategory('地下鉄')">地下鉄</button>
   <button id="nav-etc" onclick="setCategory('その他')">その他</button>
   <button id="nav-data" onclick="setCategory('資料')">資料</button>
+  <button id="nav-fav" onclick="setCategory('よく使う')">よく使う</button>
   <button id="nav-info" onclick="showSection('info')">情報</button>
   <button id="nav-settings" onclick="showSection('settings')">設定</button>
 </div>
@@ -268,6 +271,7 @@ textarea {
       <option value="その他">その他</option>
       <option value="資料">資料</option>
       <option value="画像">画像</option>
+      <option value="よく使う">よく使う</option>
     </select>
 
     <div style="text-align:right; margin-top:10px;">
@@ -310,6 +314,7 @@ function navIdForCategory(cat){
     case "地下鉄": return "nav-chika";
     case "その他": return "nav-etc";
     case "資料": return "nav-data";
+    case "よく使う": return "nav-fav";
     default: return "nav-all";
   }
 }
@@ -354,7 +359,8 @@ function categoryBorderColor(cat){
     "地下鉄":"var(--color-chika)",
     "その他":"var(--color-etc)",
     "資料":"var(--color-data)",
-    "画像":"var(--color-img)"
+    "画像":"var(--color-img)",
+    "よく使う":"var(--color-fav)"
   }[cat] || "#444";
 }
 
@@ -370,6 +376,12 @@ function render(){
     const div = document.createElement("div");
     div.className="item";
     div.style.borderLeftColor = categoryBorderColor(item.category);
+
+    /* カードタップでURLを開く（ボタンは除外） */
+    div.addEventListener("click", (e) => {
+      if (e.target.tagName.toLowerCase() === "button") return;
+      window.open(item.url, "_blank");
+    });
 
     let buttonsHtml = "";
     if(isAuthed){
@@ -474,13 +486,14 @@ window.cloudLoad = function(){
 };
 
 /* 天気 */
-const key="d47572a1cd7e50746a614ef286b5375c";
+const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
 const lat=35.68, lon=139.76;
 
+/* 現在の天気 */
 async function loadCurrentWeather(){
   const el=document.getElementById("weather-now");
   try{
-    const r=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${key}&lang=ja&units=metric`);
+    const r=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
     const d=await r.json();
     el.innerHTML=`
       <div style="text-align:center;">
@@ -491,10 +504,11 @@ async function loadCurrentWeather(){
   }catch{ el.textContent="失敗"; }
 }
 
+/* 今日の天気 */
 async function loadTodayWeather(){
   const el=document.getElementById("weather-today");
   try{
-    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${key}&lang=ja&units=metric`);
+    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
     const d=await r.json();
     const t=d.daily[0];
     el.innerHTML=`
@@ -507,10 +521,11 @@ async function loadTodayWeather(){
   }catch{ el.textContent="失敗"; }
 }
 
+/* 1週間の天気 */
 async function loadWeeklyWeather(){
   const el=document.getElementById("weather-week");
   try{
-    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${key}&lang=ja&units=metric`);
+    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
     const d=await r.json();
     const days=d.daily.slice(0,7);
 
