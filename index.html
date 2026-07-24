@@ -245,7 +245,7 @@
     }
 
     // ====== クラウド保存・受信（GAS） ======
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyCetp9juxv0dXPs9KwsMevZpaPAhoECB9SDfiCGOladJJlsOUSozA-gyD-OP3DD7xtCw/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyJVP7mnaKUerEO5CJBf1_DYVcoSoK1MfxJQ3xufcnQufE1oPJ3M3ZvWsB3P-lZFsgskg/exec";
 
     function cloudSave() {
       fetch(GAS_URL, {
