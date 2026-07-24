@@ -1,320 +1,345 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>聖介の鉄道サイト</title>
-  <style>
-    body { font-family: system-ui, sans-serif; margin: 0; padding: 0; background: #111; color: #eee; }
-    header { background: #1b1b1b; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { font-size: 18px; margin: 0; }
-    main { padding: 16px; }
+<meta charset="UTF-8">
+<title>tetsudo-site2</title>
 
-    .nav { display: flex; gap: 8px; }
-    .nav button { padding: 6px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 13px; background: #333; color: #eee; }
-    .nav button.active { background: #0078d4; }
+<style>
+  body { margin:0; background:#0f0f0f; color:#eee; font-family:system-ui; }
 
-    .section { display: none; }
-    .section.active { display: block; }
+  header {
+    background:#0066cc;
+    padding:12px 16px;
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+  }
 
-    .toolbar { margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
-    button { padding: 6px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 13px; }
-    button.primary { background: #0078d4; color: #fff; }
-    button.danger { background: #c0392b; color: #fff; }
-    button.gray { background: #444; color: #fff; }
+  .nav {
+    display:flex;
+    gap:6px;
+    background:#1a1a1a;
+    padding:8px;
+  }
 
-    input, select { padding: 6px 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: #eee; font-size: 13px; }
+  .nav button {
+    background:#333;
+    color:#eee;
+    border:none;
+    padding:6px 10px;
+    border-radius:4px;
+    cursor:pointer;
+  }
 
-    .tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
-    .tabs button { background: #222; color: #eee; border-radius: 4px; padding: 4px 8px; border: 1px solid #333; font-size: 12px; }
-    .tabs button.active { background: #0078d4; border-color: #0078d4; }
+  .nav button.active {
+    background:#0099ff;
+  }
 
-    .list { margin-top: 8px; }
-    .item { padding: 8px; margin-bottom: 6px; background: #1c1c1c; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-    .item-main { max-width: 70%; }
-    .item-title { font-size: 14px; font-weight: 600; }
-    .item-url { font-size: 12px; color: #aaa; }
-    .item-category { font-size: 11px; color: #ccc; margin-top: 2px; }
-    .item-buttons { display: flex; gap: 4px; }
+  .section { display:none; padding:16px; }
+  .section.active { display:block; }
 
-    .card { background: #1c1c1c; padding: 12px; border-radius: 6px; margin-bottom: 12px; }
-    .card-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
-  </style>
+  .tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+  .tabs button {
+    background:#222;
+    color:#eee;
+    border:1px solid #333;
+    padding:6px 10px;
+    border-radius:4px;
+    cursor:pointer;
+  }
+  .tabs button.active {
+    background:#0099ff;
+    border-color:#0099ff;
+  }
+
+  .card {
+    background:#1c1c1c;
+    padding:12px;
+    border-radius:6px;
+    margin-bottom:12px;
+  }
+
+  .item {
+    background:#1c1c1c;
+    padding:10px;
+    border-radius:6px;
+    margin-bottom:10px;
+    display:flex;
+    justify-content:space-between;
+  }
+
+  .item-title { font-size:15px; font-weight:bold; }
+  .item-url { font-size:12px; color:#aaa; }
+  .item-detail { font-size:12px; color:#ccc; margin-top:4px; }
+
+  .item-buttons button {
+    margin-left:4px;
+    padding:6px 10px;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+  }
+
+  .primary { background:#0099ff; color:white; }
+  .danger { background:#cc3333; color:white; }
+  .gray { background:#444; color:white; }
+
+  .version {
+    margin-top:20px;
+    font-size:12px;
+    color:#bbb;
+    text-align:center;
+  }
+
+  input, textarea, select {
+    width:100%;
+    padding:8px;
+    border-radius:4px;
+    border:1px solid #444;
+    background:#222;
+    color:#eee;
+    margin-bottom:10px;
+  }
+</style>
 </head>
+
 <body>
-  <header>
-    <h1>聖介の鉄道サイト</h1>
-    <div class="nav">
-      <button id="nav-urls" class="active" onclick="showSection('urls')">URL一覧</button>
-      <button id="nav-info" onclick="showSection('info')">情報</button>
-      <button id="nav-settings" onclick="showSection('settings')">同期・管理</button>
+
+<header>tetsudo-site2</header>
+
+<div class="nav">
+  <button id="nav-urls" class="active" onclick="showSection('urls')">いろんなURL</button>
+  <button id="nav-info" onclick="showSection('info')">情報</button>
+  <button id="nav-settings" onclick="showSection('settings')">設定</button>
+</div>
+
+<!-- URL一覧 -->
+<section id="section-urls" class="section active">
+
+  <div class="tabs">
+    <button class="active" onclick="filterCategory('all')">すべて</button>
+    <button onclick="filterCategory('京王')">京王</button>
+    <button onclick="filterCategory('JR')">JR</button>
+    <button onclick="filterCategory('大手私鉄')">大手私鉄</button>
+    <button onclick="filterCategory('地下鉄')">地下鉄</button>
+    <button onclick="filterCategory('その他')">その他</button>
+    <button onclick="filterCategory('資料')">資料</button>
+    <button onclick="filterCategory('画像')">画像</button>
+  </div>
+
+  <div id="urlList"></div>
+</section>
+
+<!-- 情報 -->
+<section id="section-info" class="section">
+  <div class="card">
+    <h3>現在の天気（東京）</h3>
+    <div id="weather">読み込み中...</div>
+    <button class="primary" onclick="loadWeather()">更新</button>
+  </div>
+
+  <div class="card">
+    <h3>現在時刻</h3>
+    <div id="datetime">読み込み中...</div>
+  </div>
+</section>
+
+<!-- 設定 -->
+<section id="section-settings" class="section">
+
+  <div class="card">
+    <h3>クラウド同期</h3>
+    <button class="primary" onclick="cloudSave()">クラウド保存</button>
+    <button class="gray" onclick="cloudLoad()">クラウド受信</button>
+  </div>
+
+  <div class="card">
+    <h3>URL追加（パスワード必要）</h3>
+    <input id="passInput" type="password" placeholder="パスワードを入力">
+    <button class="primary" onclick="checkPass()">認証</button>
+
+    <div id="addForm" style="display:none; margin-top:10px;">
+      <input id="newTitle" placeholder="タイトル">
+      <input id="newUrl" placeholder="URL">
+      <textarea id="newDetail" placeholder="詳細"></textarea>
+      <select id="newCategory">
+        <option value="京王">京王</option>
+        <option value="JR">JR</option>
+        <option value="大手私鉄">大手私鉄</option>
+        <option value="地下鉄">地下鉄</option>
+        <option value="その他">その他</option>
+        <option value="資料">資料</option>
+        <option value="画像">画像</option>
+      </select>
+      <button class="primary" onclick="addUrl()">追加</button>
     </div>
-  </header>
+  </div>
 
-  <main>
-    <!-- URL一覧 -->
-    <section id="section-urls" class="section active">
-      <div class="toolbar">
-        <input id="newTitle" type="text" placeholder="タイトル">
-        <input id="newUrl" type="text" placeholder="URL">
-        <select id="newCategory">
-          <option value="京王">京王</option>
-          <option value="JR">JR</option>
-          <option value="大手私鉄">大手私鉄</option>
-          <option value="地下鉄">地下鉄</option>
-          <option value="その他">その他</option>
-          <option value="資料">資料</option>
-          <option value="画像">画像</option>
-        </select>
-        <button class="primary" onclick="addUrl()">追加</button>
-      </div>
+  <div class="version">
+    バージョン: <span id="versionText"></span>
+  </div>
+</section>
 
-      <div class="tabs">
-        <button id="tab-all" class="active" onclick="filterCategory('all')">すべて</button>
-        <button onclick="filterCategory('京王')">京王</button>
-        <button onclick="filterCategory('JR')">JR</button>
-        <button onclick="filterCategory('大手私鉄')">大手私鉄</button>
-        <button onclick="filterCategory('地下鉄')">地下鉄</button>
-        <button onclick="filterCategory('その他')">その他</button>
-        <button onclick="filterCategory('資料')">資料</button>
-        <button onclick="filterCategory('画像')">画像</button>
-      </div>
+<script>
+  const version = "2.0";  
+  document.getElementById("versionText").textContent = version;
 
-      <div id="urlList" class="list"></div>
-    </section>
+  let urls = [];
+  let currentCategory = "all";
 
-    <!-- 情報（天気＋時刻） -->
-    <section id="section-info" class="section">
-      <div class="card">
-        <div class="card-title">現在の天気（東京）</div>
-        <div id="weather">読み込み中...</div>
-        <button class="primary" style="margin-top:8px;" onclick="loadWeather()">天気を更新</button>
-      </div>
-      <div class="card">
-        <div class="card-title">現在時刻</div>
-        <div id="datetime">読み込み中...</div>
-      </div>
-    </section>
+  function showSection(name) {
+    ["urls","info","settings"].forEach(id=>{
+      document.getElementById("section-"+id).classList.remove("active");
+      document.getElementById("nav-"+id).classList.remove("active");
+    });
+    document.getElementById("section-"+name).classList.add("active");
+    document.getElementById("nav-"+name).classList.add("active");
+  }
 
-    <!-- 同期・管理（クラウド保存・受信） -->
-    <section id="section-settings" class="section">
-      <div class="card">
-        <div class="card-title">クラウド同期</div>
-        <p style="font-size:12px; color:#ccc;">
-          URL一覧をクラウド（Googleスプレッドシート）に保存し、他の端末から受信して同じ状態にできます。
-        </p>
-        <button class="primary" onclick="cloudSave()">クラウド保存</button>
-        <button class="gray" onclick="cloudLoad()">クラウド受信</button>
-      </div>
-    </section>
-  </main>
+  function filterCategory(cat){
+    currentCategory = cat;
+    render();
+  }
 
-  <script>
-    // ===== データ管理 =====
-    let urls = [];
-    let currentCategory = "all";
+  function render(){
+    const list = document.getElementById("urlList");
+    list.innerHTML = "";
 
-    function loadLocal() {
-      const saved = localStorage.getItem("urls");
-      if (saved) {
-        urls = JSON.parse(saved);
-      } else {
-        urls = [];
-      }
-      render();
+    const filtered = urls.filter(u => currentCategory==="all" || u.category===currentCategory);
+
+    filtered.forEach((item, index)=>{
+      const div = document.createElement("div");
+      div.className = "item";
+
+      div.innerHTML = `
+        <div>
+          <div class="item-title">${item.title}</div>
+          <div class="item-url">${item.url}</div>
+          <div class="item-detail">${item.detail}</div>
+        </div>
+        <div class="item-buttons">
+          <button class="gray" onclick="editUrl(${index})">編集</button>
+          <button class="danger" onclick="removeUrl(${index})">削除</button>
+        </div>
+      `;
+
+      list.appendChild(div);
+    });
+  }
+
+  function checkPass(){
+    const pass = document.getElementById("passInput").value;
+    if(pass === "0829"){
+      document.getElementById("addForm").style.display = "block";
+      alert("認証成功");
+    } else {
+      alert("パスワードが違います");
+    }
+  }
+
+  function addUrl(){
+    const title = document.getElementById("newTitle").value.trim();
+    const url = document.getElementById("newUrl").value.trim();
+    const detail = document.getElementById("newDetail").value.trim();
+    const category = document.getElementById("newCategory").value;
+
+    if(!title || !url){
+      alert("タイトルとURLは必須です");
+      return;
     }
 
-    function render() {
-      const list = document.getElementById("urlList");
-      list.innerHTML = "";
+    urls.push({ title, url, detail, category });
+    localStorage.setItem("urls", JSON.stringify(urls));
+    cloudSave();
+    render();
 
-      const filtered = urls.filter(item => {
-        if (currentCategory === "all") return true;
-        return item.category === currentCategory;
-      });
+    document.getElementById("newTitle").value = "";
+    document.getElementById("newUrl").value = "";
+    document.getElementById("newDetail").value = "";
+  }
 
-      filtered.forEach((item, index) => {
-        const div = document.createElement("div");
-        div.className = "item";
+  function editUrl(index){
+    const item = urls[index];
+    const newTitle = prompt("タイトル", item.title);
+    if(newTitle===null) return;
+    const newUrl = prompt("URL", item.url);
+    if(newUrl===null) return;
+    const newDetail = prompt("詳細", item.detail);
+    if(newDetail===null) return;
 
-        const main = document.createElement("div");
-        main.className = "item-main";
-        const t = document.createElement("div");
-        t.className = "item-title";
-        t.textContent = item.title;
-        const u = document.createElement("div");
-        u.className = "item-url";
-        u.textContent = item.url;
-        const c = document.createElement("div");
-        c.className = "item-category";
-        c.textContent = "カテゴリ: " + item.category;
-        main.appendChild(t);
-        main.appendChild(u);
-        main.appendChild(c);
+    urls[index] = { title:newTitle, url:newUrl, detail:newDetail, category:item.category };
+    localStorage.setItem("urls", JSON.stringify(urls));
+    cloudSave();
+    render();
+  }
 
-        const btns = document.createElement("div");
-        btns.className = "item-buttons";
-        const editBtn = document.createElement("button");
-        editBtn.className = "gray";
-        editBtn.textContent = "編集";
-        editBtn.onclick = () => editUrl(index);
-        const delBtn = document.createElement("button");
-        delBtn.className = "danger";
-        delBtn.textContent = "削除";
-        delBtn.onclick = () => removeUrl(index);
-        btns.appendChild(editBtn);
-        btns.appendChild(delBtn);
+  function removeUrl(index){
+    if(!confirm("削除しますか？")) return;
+    urls.splice(index,1);
+    localStorage.setItem("urls", JSON.stringify(urls));
+    cloudSave();
+    render();
+  }
 
-        div.appendChild(main);
-        div.appendChild(btns);
-        list.appendChild(div);
-      });
-    }
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyJVP7mnaKUerEO5CJBf1_DYVcoSoK1MfxJQ3xufcnQufE1oPJ3M3ZvWsB3P-lZFsgskg/exec";
 
-    function addUrl() {
-      const title = document.getElementById("newTitle").value.trim();
-      const url = document.getElementById("newUrl").value.trim();
-      const category = document.getElementById("newCategory").value;
+  function cloudSave(){
+    fetch(GAS_URL, { method:"POST", body:JSON.stringify(urls) });
+  }
 
-      if (!title || !url) {
-        alert("タイトルとURLを入力してください");
-        return;
-      }
-
-      urls.push({ title, url, category });
-      localStorage.setItem("urls", JSON.stringify(urls));
-      cloudSave();
-      render();
-
-      document.getElementById("newTitle").value = "";
-      document.getElementById("newUrl").value = "";
-    }
-
-    function editUrl(index) {
-      const item = urls[index];
-      const newTitle = prompt("タイトルを入力", item.title);
-      if (newTitle === null) return;
-      const newUrl = prompt("URLを入力", item.url);
-      if (newUrl === null) return;
-      const newCategory = prompt("カテゴリを入力（京王 / JR / 大手私鉄 / 地下鉄 / その他 / 資料 / 画像）", item.category);
-      if (newCategory === null) return;
-
-      urls[index] = {
-        title: newTitle.trim(),
-        url: newUrl.trim(),
-        category: newCategory.trim()
-      };
-
-      localStorage.setItem("urls", JSON.stringify(urls));
-      cloudSave();
-      render();
-      alert("編集内容をクラウドに同期しました");
-    }
-
-    function removeUrl(index) {
-      if (!confirm("このURLを削除しますか？")) return;
-      urls.splice(index, 1);
-      localStorage.setItem("urls", JSON.stringify(urls));
-      cloudSave();
-      render();
-    }
-
-    function filterCategory(cat) {
-      currentCategory = cat;
-      document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
-      if (cat === "all") {
-        document.getElementById("tab-all").classList.add("active");
-      } else {
-        // 簡易的にボタンのテキストで判定
-        document.querySelectorAll(".tabs button").forEach(b => {
-          if (b.textContent === cat) b.classList.add("active");
-        });
-      }
-      render();
-    }
-
-    // ===== セクション切り替え =====
-    function showSection(name) {
-      ["urls", "info", "settings"].forEach(id => {
-        document.getElementById("section-" + id).classList.remove("active");
-        document.getElementById("nav-" + id).classList.remove("active");
-      });
-      document.getElementById("section-" + name).classList.add("active");
-      document.getElementById("nav-" + name).classList.add("active");
-    }
-
-    // ===== 天気API =====
-    async function loadWeather() {
-      const apiKey = "d47572a1cd7e50746a614ef286b5375c";
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=Tokyo&appid=${apiKey}&lang=ja&units=metric`;
-
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-
-        const weather = data.weather[0].description;
-        const temp = data.main.temp;
-        const humidity = data.main.humidity;
-        const icon = data.weather[0].icon;
-
-        document.getElementById("weather").innerHTML = `
-          <div style="display:flex; align-items:center; gap:20px;">
-            <img src="https://openweathermap.org/img/wn/${icon}@4x.png"
-                 style="width:140px; height:140px;">
-            <div style="font-size:26px; line-height:1.7;">
-              天気：${weather}<br>
-              気温：${temp}℃<br>
-              湿度：${humidity}%
-            </div>
-          </div>
-        `;
-      } catch (e) {
-        document.getElementById("weather").innerText = "天気情報を取得できませんでした";
-      }
-    }
-
-    // ===== 時刻リアルタイム更新 =====
-    function startClock() {
-      setInterval(() => {
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = now.getMonth() + 1;
-        const d = now.getDate();
-        const h = now.getHours();
-        const min = now.getMinutes().toString().padStart(2, "0");
-        const sec = now.getSeconds().toString().padStart(2, "0");
-        document.getElementById("datetime").textContent =
-          `${y}年${m}月${d}日 ${h}時${min}分${sec}秒`;
-      }, 1000);
-    }
-
-    // ===== クラウド保存・受信（GAS） =====
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyJVP7mnaKUerEO5CJBf1_DYVcoSoK1MfxJQ3xufcnQufE1oPJ3M3ZvWsB3P-lZFsgskg/exec";
-
-    function cloudSave() {
-      fetch(GAS_URL, {
-        method: "POST",
-        body: JSON.stringify(urls)
+  function cloudLoad(){
+    fetch(GAS_URL)
+      .then(res=>res.json())
+      .then(data=>{
+        urls = data;
+        localStorage.setItem("urls", JSON.stringify(urls));
+        render();
+        alert("クラウドから受信しました");
       })
-      .then(() => console.log("クラウド保存完了"))
-      .catch(() => console.log("クラウド保存失敗"));
-    }
+      .catch(()=>alert("受信失敗"));
+  }
 
-    function cloudLoad() {
-      fetch(GAS_URL)
-        .then(res => res.json())
-        .then(data => {
-          urls = data;
-          localStorage.setItem("urls", JSON.stringify(urls));
-          render();
-          alert("クラウドから受信しました");
-        })
-        .catch(() => alert("クラウド受信に失敗しました"));
-    }
+  async function loadWeather(){
+    const apiKey = "d47572a1cd7e50746a614ef286b5375c";
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=Tokyo&appid=${apiKey}&lang=ja&units=metric`;
 
-    // 初期化
-    loadLocal();
-    startClock();
-    loadWeather();
-  </script>
+    try{
+      const res = await fetch(url);
+      const data = await res.json();
+
+      const icon = data.weather[0].icon;
+      const weather = data.weather[0].description;
+      const temp = data.main.temp;
+
+      document.getElementById("weather").innerHTML = `
+        <div style="display:flex; gap:20px; align-items:center;">
+          <img src="https://openweathermap.org/img/wn/${icon}@4x.png" style="width:120px;">
+          <div style="font-size:22px;">
+            天気：${weather}<br>
+            気温：${temp}℃
+          </div>
+        </div>
+      `;
+    } catch {
+      document.getElementById("weather").innerText = "取得失敗";
+    }
+  }
+
+  function startClock(){
+    setInterval(()=>{
+      const now = new Date();
+      document.getElementById("datetime").textContent =
+        `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 `
+        + `${now.getHours()}時${String(now.getMinutes()).padStart(2,"0")}分${String(now.getSeconds()).padStart(2,"0")}秒`;
+    },1000);
+  }
+
+  // 初期化
+  urls = JSON.parse(localStorage.getItem("urls") || "[]");
+  render();
+  startClock();
+  loadWeather();
+</script>
+
 </body>
 </html>
