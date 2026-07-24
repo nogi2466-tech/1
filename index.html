@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>tetsudo-site2 Firebase版</title>
+  <title>tetsudo-site2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
@@ -62,35 +62,6 @@
       display: block;
     }
 
-    .tabs {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-
-    .tabs button {
-      border: none;
-      padding: 6px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      color: #fff;
-    }
-
-    .tabs button.active {
-      box-shadow: 0 0 0 2px #fff3;
-    }
-
-    .tab-all { background: #555; }
-    .tab-keio { background: var(--color-keio); }
-    .tab-jr { background: var(--color-jr); }
-    .tab-ote { background: var(--color-ote); }
-    .tab-chika { background: var(--color-chika); }
-    .tab-etc { background: var(--color-etc); }
-    .tab-data { background: var(--color-data); color:#000; }
-    .tab-img { background: var(--color-img); }
-
     .item {
       padding: 10px;
       border-radius: 6px;
@@ -99,6 +70,8 @@
       justify-content: space-between;
       gap: 10px;
       color: #fff;
+      background: #1c1c1c;
+      border-left: 6px solid #444;
     }
 
     .item-inner {
@@ -225,6 +198,49 @@
       margin: 0 0 8px;
       font-size: 16px;
     }
+
+    .circle-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .circle-tab {
+      border-radius: 999px;
+      padding: 6px 14px;
+      border: 1px solid #555;
+      background: #222;
+      color: #eee;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .circle-tab.active {
+      background: #0099ff;
+      border-color: #0099ff;
+    }
+
+    .weather-block {
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    .weather-week {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .weather-day {
+      background: #222;
+      padding: 8px;
+      border-radius: 6px;
+      width: 120px;
+      font-size: 12px;
+      text-align: center;
+    }
   </style>
 </head>
 
@@ -232,33 +248,41 @@
   <header>tetsudo-site2</header>
 
   <div class="nav">
-    <button id="nav-urls" class="active" onclick="showSection('urls')">いろんなURL</button>
+    <button id="nav-all" class="active" onclick="setCategory('all')">すべて</button>
+    <button id="nav-keio" onclick="setCategory('京王')">京王</button>
+    <button id="nav-jr" onclick="setCategory('JR')">JR</button>
+    <button id="nav-ote" onclick="setCategory('大手私鉄')">大手私鉄</button>
+    <button id="nav-chika" onclick="setCategory('地下鉄')">地下鉄</button>
+    <button id="nav-etc" onclick="setCategory('その他')">その他</button>
+    <button id="nav-data" onclick="setCategory('資料')">資料</button>
     <button id="nav-info" onclick="showSection('info')">情報</button>
     <button id="nav-settings" onclick="showSection('settings')">設定</button>
   </div>
 
   <!-- URL一覧 -->
   <section id="section-urls" class="section active">
-    <div class="tabs">
-      <button class="tab-all active" data-cat="all" onclick="filterCategory('all')">すべて</button>
-      <button class="tab-keio" data-cat="京王" onclick="filterCategory('京王')">京王</button>
-      <button class="tab-jr" data-cat="JR" onclick="filterCategory('JR')">JR</button>
-      <button class="tab-ote" data-cat="大手私鉄" onclick="filterCategory('大手私鉄')">大手私鉄</button>
-      <button class="tab-chika" data-cat="地下鉄" onclick="filterCategory('地下鉄')">地下鉄</button>
-      <button class="tab-etc" data-cat="その他" onclick="filterCategory('その他')">その他</button>
-      <button class="tab-data" data-cat="資料" onclick="filterCategory('資料')">資料</button>
-      <button class="tab-img" data-cat="画像" onclick="filterCategory('画像')">画像</button>
-    </div>
-
     <div id="urlList"></div>
   </section>
 
   <!-- 情報 -->
   <section id="section-info" class="section">
     <div class="card">
-      <h3>現在の天気（東京）</h3>
-      <div id="weather">読み込み中...</div>
-      <button class="primary" onclick="loadWeather()">更新</button>
+      <h3>天気情報（東京）</h3>
+      <div class="circle-tabs">
+        <button class="circle-tab active" data-tab="now" onclick="switchWeatherTab('now')">現在</button>
+        <button class="circle-tab" data-tab="today" onclick="switchWeatherTab('today')">今日</button>
+        <button class="circle-tab" data-tab="week" onclick="switchWeatherTab('week')">1週間</button>
+      </div>
+
+      <div id="weather-now" class="weather-block">
+        読み込み中...
+      </div>
+      <div id="weather-today" class="weather-block" style="display:none;">
+        読み込み中...
+      </div>
+      <div id="weather-week" class="weather-block" style="display:none;">
+        読み込み中...
+      </div>
     </div>
 
     <div class="card">
@@ -277,9 +301,10 @@
 
     <div class="card">
       <h3>URL追加（パスワード必要）</h3>
+      <p style="font-size:12px; opacity:0.9;">パスワード：0829</p>
       <input id="passInput" type="password" placeholder="パスワードを入力">
       <button class="primary" onclick="checkPass()">認証</button>
-      <p style="font-size:12px; opacity:0.8;">正しいパスワードで「新規追加」画面が開きます（0829）。</p>
+      <p style="font-size:12px; opacity:0.8;">正しいパスワードで「新規追加」画面が開きます。</p>
       <button id="openAddBtn" class="gray" style="margin-top:8px; display:none;" onclick="openAddModal()">新規追加画面を開く</button>
     </div>
 
@@ -320,7 +345,7 @@
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyD55Pawag1UichGwM-Uxddivb8lFr7QOU8",
+      apiKey: "d47572a1cd7e50746a614ef286b5375c",
       authDomain: "tetsudo-site6.firebaseapp.com",
       databaseURL: "https://tetsudo-site6-default-rtdb.firebaseio.com",
       projectId: "tetsudo-site6",
@@ -340,16 +365,41 @@
     let currentCategory = "all";
     let editIndex = null;
 
-    window.showSection = function(name) {
+    function showSection(name) {
       ["urls", "info", "settings"].forEach(id => {
         document.getElementById("section-" + id).classList.remove("active");
-        document.getElementById("nav-" + id).classList.remove("active");
       });
-      document.getElementById("section-" + name).classList.add("active");
-      document.getElementById("nav-" + name).classList.add("active");
-    };
+      if (name === "info" || name === "settings") {
+        document.getElementById("section-" + name).classList.add("active");
+      } else {
+        document.getElementById("section-urls").classList.add("active");
+      }
 
-    function categoryColor(cat) {
+      document.querySelectorAll(".nav button").forEach(btn => btn.classList.remove("active"));
+      if (name === "info") {
+        document.getElementById("nav-info").classList.add("active");
+      } else if (name === "settings") {
+        document.getElementById("nav-settings").classList.add("active");
+      } else {
+        document.getElementById("nav-" + (name === "all" ? "all" : name)).classList.add("active");
+      }
+    }
+
+    function setCategory(cat) {
+      currentCategory = cat;
+      showSection("urls");
+      document.querySelectorAll(".nav button").forEach(btn => btn.classList.remove("active"));
+      if (cat === "all") document.getElementById("nav-all").classList.add("active");
+      if (cat === "京王") document.getElementById("nav-keio").classList.add("active");
+      if (cat === "JR") document.getElementById("nav-jr").classList.add("active");
+      if (cat === "大手私鉄") document.getElementById("nav-ote").classList.add("active");
+      if (cat === "地下鉄") document.getElementById("nav-chika").classList.add("active");
+      if (cat === "その他") document.getElementById("nav-etc").classList.add("active");
+      if (cat === "資料") document.getElementById("nav-data").classList.add("active");
+      render();
+    }
+
+    function categoryBorderColor(cat) {
       switch (cat) {
         case "京王": return "var(--color-keio)";
         case "JR": return "var(--color-jr)";
@@ -362,29 +412,23 @@
       }
     }
 
-    window.filterCategory = function(cat) {
-      currentCategory = cat;
-
-      document.querySelectorAll(".tabs button").forEach(btn => {
-        btn.classList.remove("active");
-        if (btn.dataset.cat === cat || (cat === "all" && btn.dataset.cat === "all")) {
-          btn.classList.add("active");
-        }
-      });
-
-      render();
-    };
-
     function render() {
       const list = document.getElementById("urlList");
       list.innerHTML = "";
 
-      const filtered = urls.filter(u => currentCategory === "all" || u.category === currentCategory);
+      let filtered = urls;
+      if (currentCategory !== "all") {
+        filtered = urls.filter(u => u.category === currentCategory);
+      }
+
+      filtered = filtered.slice().sort((a, b) =>
+        a.title.localeCompare(b.title, "ja")
+      );
 
       filtered.forEach((item, index) => {
         const div = document.createElement("div");
         div.className = "item";
-        div.style.background = categoryColor(item.category);
+        div.style.borderLeftColor = categoryBorderColor(item.category);
 
         const inner = document.createElement("div");
         inner.className = "item-inner";
@@ -509,30 +553,103 @@
       );
     };
 
-    window.loadWeather = async function() {
-      const apiKey = "d47572a1cd7e50746a614ef286b5375c";
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=Tokyo&appid=${apiKey}&lang=ja&units=metric`;
+    const weatherApiKey = "d47572a1cd7e50746a614ef286b5375c";
+    const lat = 35.68;
+    const lon = 139.76;
 
+    async function loadCurrentWeather() {
+      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`;
+      const el = document.getElementById("weather-now");
       try {
         const res = await fetch(url);
         const data = await res.json();
-
         const icon = data.weather[0].icon;
         const weather = data.weather[0].description;
         const temp = data.main.temp;
-
-        document.getElementById("weather").innerHTML = `
+        el.innerHTML = `
           <div style="display:flex; gap:20px; align-items:center;">
-            <img src="https://openweathermap.org/img/wn/${icon}@4x.png" style="width:120px;">
-            <div style="font-size:22px;">
-              天気：${weather}<br>
+            <img src="https://openweathermap.org/img/wn/${icon}@4x.png" style="width:80px;">
+            <div>
+              現在の天気：${weather}<br>
               気温：${temp}℃
             </div>
           </div>
         `;
       } catch {
-        document.getElementById("weather").innerText = "取得失敗";
+        el.textContent = "取得失敗";
       }
+    }
+
+    async function loadTodayWeather() {
+      const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric&exclude=minutely,hourly`;
+      const el = document.getElementById("weather-today");
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const today = data.daily[0];
+        const icon = today.weather[0].icon;
+        const weather = today.weather[0].description;
+        const tempMax = today.temp.max;
+        const tempMin = today.temp.min;
+        const pop = Math.round((today.pop || 0) * 100);
+        el.innerHTML = `
+          <div style="display:flex; gap:20px; align-items:center;">
+            <img src="https://openweathermap.org/img/wn/${icon}@4x.png" style="width:80px;">
+            <div>
+              今日の天気：${weather}<br>
+              最高気温：${tempMax}℃　最低気温：${tempMin}℃<br>
+              降水確率：${pop}%
+            </div>
+          </div>
+        `;
+      } catch {
+        el.textContent = "取得失敗";
+      }
+    }
+
+    async function loadWeeklyWeather() {
+      const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric&exclude=minutely,hourly`;
+      const el = document.getElementById("weather-week");
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const days = data.daily.slice(0, 7);
+        const container = document.createElement("div");
+        container.className = "weather-week";
+
+        days.forEach((d, i) => {
+          const date = new Date(d.dt * 1000);
+          const label = `${date.getMonth() + 1}/${date.getDate()}`;
+          const icon = d.weather[0].icon;
+          const weather = d.weather[0].description;
+          const tempMax = d.temp.max;
+          const tempMin = d.temp.min;
+
+          const dayEl = document.createElement("div");
+          dayEl.className = "weather-day";
+          dayEl.innerHTML = `
+            <div>${i === 0 ? "今日" : label}</div>
+            <img src="https://openweathermap.org/img/wn/${icon}.png" style="width:40px;"><br>
+            ${weather}<br>
+            ${tempMax}℃ / ${tempMin}℃
+          `;
+          container.appendChild(dayEl);
+        });
+
+        el.innerHTML = "";
+        el.appendChild(container);
+      } catch {
+        el.textContent = "取得失敗";
+      }
+    }
+
+    window.switchWeatherTab = function(tab) {
+      document.querySelectorAll(".circle-tab").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === tab);
+      });
+      document.getElementById("weather-now").style.display = tab === "now" ? "block" : "none";
+      document.getElementById("weather-today").style.display = tab === "today" ? "block" : "none";
+      document.getElementById("weather-week").style.display = tab === "week" ? "block" : "none";
     };
 
     function startClock() {
@@ -550,7 +667,9 @@
 
     render();
     startClock();
-    loadWeather();
+    loadCurrentWeather();
+    loadTodayWeather();
+    loadWeeklyWeather();
   </script>
 </body>
 </html>
