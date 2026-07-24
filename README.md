@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>tetsudo-site2</title>
+  <title>tetsudo-site2 Firebase版</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
@@ -213,6 +213,18 @@
         width: 100%;
       }
     }
+
+    .card {
+      background: #1c1c1c;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
   </style>
 </head>
 
@@ -224,6 +236,7 @@
     <button id="nav-info" onclick="showSection('info')">情報</button>
     <button id="nav-settings" onclick="showSection('settings')">設定</button>
   </div>
+
   <!-- URL一覧 -->
   <section id="section-urls" class="section active">
     <div class="tabs">
@@ -274,6 +287,7 @@
       バージョン: <span id="versionText"></span>
     </div>
   </section>
+
   <!-- 追加・編集モーダル -->
   <div id="modalBg" class="modal-bg">
     <div class="modal">
@@ -300,7 +314,25 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD55Pawag1UichGwM-Uxddivb8lFr7QOU8",
+      authDomain: "tetsudo-site6.firebaseapp.com",
+      databaseURL: "https://tetsudo-site6-default-rtdb.firebaseio.com",
+      projectId: "tetsudo-site6",
+      storageBucket: "tetsudo-site6.firebasestorage.app",
+      messagingSenderId: "563943849207",
+      appId: "1:563943849207:web:1c813365201cb431d6e7f2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase();
+    const auth = getAuth();
+
     const version = "2.0";
     document.getElementById("versionText").textContent = version;
 
@@ -308,14 +340,14 @@
     let currentCategory = "all";
     let editIndex = null;
 
-    function showSection(name) {
+    window.showSection = function(name) {
       ["urls", "info", "settings"].forEach(id => {
         document.getElementById("section-" + id).classList.remove("active");
         document.getElementById("nav-" + id).classList.remove("active");
       });
       document.getElementById("section-" + name).classList.add("active");
       document.getElementById("nav-" + name).classList.add("active");
-    }
+    };
 
     function categoryColor(cat) {
       switch (cat) {
@@ -330,7 +362,7 @@
       }
     }
 
-    function filterCategory(cat) {
+    window.filterCategory = function(cat) {
       currentCategory = cat;
 
       document.querySelectorAll(".tabs button").forEach(btn => {
@@ -341,7 +373,7 @@
       });
 
       render();
-    }
+    };
 
     function render() {
       const list = document.getElementById("urlList");
@@ -376,7 +408,7 @@
       });
     }
 
-    function checkPass() {
+    window.checkPass = function() {
       const pass = document.getElementById("passInput").value;
       if (pass === "0829") {
         document.getElementById("openAddBtn").style.display = "inline-block";
@@ -384,9 +416,9 @@
       } else {
         alert("パスワードが違います");
       }
-    }
+    };
 
-    function openAddModal() {
+    window.openAddModal = function() {
       editIndex = null;
       document.getElementById("modalTitle").textContent = "新規追加";
       document.getElementById("formTitle").value = "";
@@ -395,9 +427,9 @@
       document.getElementById("formCategory").value = "京王";
       document.getElementById("modalBg").style.display = "flex";
       document.querySelector(".modal-buttons .primary").textContent = "追加する";
-    }
+    };
 
-    function openEditModal(index) {
+    window.openEditModal = function(index) {
       editIndex = index;
       const item = urls[index];
 
@@ -409,13 +441,13 @@
 
       document.getElementById("modalBg").style.display = "flex";
       document.querySelector(".modal-buttons .primary").textContent = "保存する";
-    }
+    };
 
-    function closeModal() {
+    window.closeModal = function() {
       document.getElementById("modalBg").style.display = "none";
-    }
+    };
 
-    function submitModal() {
+    window.submitModal = function() {
       const title = document.getElementById("formTitle").value.trim();
       const url = document.getElementById("formUrl").value.trim();
       const detail = document.getElementById("formDetail").value.trim();
@@ -438,45 +470,46 @@
       cloudSave(true);
       render();
       closeModal();
-    }
+    };
 
-    function removeUrl(index) {
+    window.removeUrl = function(index) {
       if (!confirm("削除しますか？")) return;
 
       urls.splice(index, 1);
       localStorage.setItem("urls", JSON.stringify(urls));
       cloudSave(true);
       render();
-    }
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxd3FisQmrGXmcecaaf30oeYQKUB1NCc6myCLS4QnHoRM5u9HfFAsfMOvictRYP2rGSTQ/exec";
+    };
 
-    function cloudSave(silent = false) {
-      fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(urls)
-      })
-      .then(() => {
-        if (!silent) alert("クラウド保存しました");
-      })
-      .catch(() => {
-        alert("クラウド保存に失敗しました");
-      });
-    }
+    window.cloudSave = function(silent = false) {
+      const dataRef = ref(db, "urlData");
+      set(dataRef, urls)
+        .then(() => {
+          if (!silent) alert("クラウド保存しました");
+        })
+        .catch(() => {
+          alert("クラウド保存に失敗しました");
+        });
+    };
 
-    function cloudLoad() {
-      fetch(GAS_URL)
-        .then(res => res.json())
-        .then(data => {
-          urls = data;
+    window.cloudLoad = function() {
+      const dataRef = ref(db, "urlData");
+      onValue(
+        dataRef,
+        (snapshot) => {
+          const data = snapshot.val();
+          urls = data || [];
           localStorage.setItem("urls", JSON.stringify(urls));
           render();
           alert("クラウドから受信しました");
-        })
-        .catch(() => alert("受信に失敗しました"));
-    }
+        },
+        () => {
+          alert("受信に失敗しました");
+        }
+      );
+    };
 
-    async function loadWeather() {
+    window.loadWeather = async function() {
       const apiKey = "d47572a1cd7e50746a614ef286b5375c";
       const url = `https://api.openweathermap.org/data/2.5/weather?q=Tokyo&appid=${apiKey}&lang=ja&units=metric`;
 
@@ -500,7 +533,7 @@
       } catch {
         document.getElementById("weather").innerText = "取得失敗";
       }
-    }
+    };
 
     function startClock() {
       setInterval(() => {
@@ -511,7 +544,10 @@
       }, 1000);
     }
 
-    // 初期化
+    signInAnonymously(auth).then(() => {
+      cloudLoad();
+    });
+
     render();
     startClock();
     loadWeather();
