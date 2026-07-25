@@ -24,27 +24,33 @@ body {
   font-family:system-ui;
 }
 
-/* ライトモード（黒系に変更） */
+/* ライトモード（白色に修正済み） */
 body.light {
-  background:#222;
-  color:#eee;
+  background:#ffffff;
+  color:#000000;
 }
+
 body.light .card,
 body.light .item,
 body.light .modal {
-  background:#2a2a2a;
-  color:#fff;
+  background:#f5f5f5;
+  color:#000;
 }
+
 body.light .nav {
-  background:#333;
+  background:#eaeaea;
 }
+
 body.light .nav button {
-  background:#444;
-  color:#fff;
+  background:#ffffff;
+  color:#000;
+  border:1px solid #ccc;
 }
+
 body.light .nav button.active {
   background:#0099ff;
   color:#fff;
+  border-color:#0099ff;
 }
 
 header {
@@ -94,7 +100,7 @@ header {
 .section { display:none; padding:16px; }
 .section.active { display:block; }
 
-/* カード（最新版） */
+/* カード */
 .item {
   background:#1c1c1c;
   padding:18px;
@@ -181,10 +187,10 @@ header {
 
 .modal {
   background:#1c1c1c;
-  padding:16px;
+  padding:10px;        /* ← さらに縮小 */
   border-radius:14px;
-  width:90%;
-  max-width:300px;   /* ← 完全に収まるサイズ */
+  width:95%;           /* ← 画面幅に合わせる */
+  max-width:260px;     /* ← スマホでも絶対収まる */
   box-sizing:border-box;
 }
 
@@ -387,40 +393,39 @@ function categoryBorderColor(cat){
   }[cat] || "#444";
 }
 
-/* URL描画（indexズレ完全修正版） */
+/* URL描画（並び順＋indexズレ完全修正版） */
 function render(){
   const list = document.getElementById("urlList");
   list.innerHTML = "";
 
-  urls.forEach((item, realIndex)=>{
-    if(currentCategory !== "all" && item.category !== currentCategory) return;
+  const sorted = urls
+    .filter(item => currentCategory === "all" || item.category === currentCategory)
+    .sort((a,b)=>a.title.localeCompare(b.title,"ja"));
+
+  sorted.forEach(item=>{
+    const realIndex = urls.indexOf(item);
 
     const div = document.createElement("div");
     div.className="item";
     div.style.borderLeftColor = categoryBorderColor(item.category);
 
-    /* カードタップでURLを開く（ボタンは除外） */
     div.addEventListener("click", (e) => {
       if (e.target.tagName.toLowerCase() === "button") return;
       window.open(item.url, "_blank");
     });
 
-    let buttonsHtml = "";
-    if(isAuthed){
-      buttonsHtml = `
-        <button class="gray" onclick="openEditModal(${realIndex})">編集</button>
-        <button class="danger" onclick="removeUrl(${realIndex})">削除</button>
-      `;
-    }
-
-    /* URL 表示なし、カテゴリを左上に小さく表示 */
     div.innerHTML = `
       <div class="item-inner">
         <div class="item-category-small">${item.category}</div>
         <div class="item-title">${item.title}</div>
         <div class="item-detail">${item.detail||""}</div>
       </div>
-      <div class="item-buttons">${buttonsHtml}</div>
+      <div class="item-buttons">
+        ${isAuthed ? `
+          <button class="gray" onclick="openEditModal(${realIndex})">編集</button>
+          <button class="danger" onclick="removeUrl(${realIndex})">削除</button>
+        ` : ""}
+      </div>
     `;
     list.appendChild(div);
   });
