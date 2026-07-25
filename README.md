@@ -13,6 +13,7 @@
   --color-chika:#2980b9;
   --color-etc:#7f8c8d;
   --color-data:#f1c40f;
+  --color-img:#d35400;
   --color-fav:#ff8800;
 }
 
@@ -24,39 +25,27 @@ body {
   font-family:system-ui;
 }
 
-/* ライトモード（完全白化） */
+/* ライトモード */
 body.light {
-  background:#ffffff;
-  color:#000000;
+  background:#f5f5f5;
+  color:#222;
 }
-
-body.light .section,
 body.light .card,
 body.light .item,
-body.light .modal,
-body.light .weather-day {
-  background:#ffffff !important;
-  color:#000 !important;
+body.light .modal {
+  background:#fff;
+  color:#222;
 }
-
-body.light .item-category-small {
-  color:#444 !important;
-}
-
 body.light .nav {
-  background:#f0f0f0 !important;
+  background:#e0e0e0;
 }
-
 body.light .nav button {
-  background:#ffffff !important;
-  color:#000 !important;
-  border:1px solid #ccc !important;
+  background:#ccc;
+  color:#222;
 }
-
 body.light .nav button.active {
-  background:#0099ff !important;
-  color:#fff !important;
-  border-color:#0099ff !important;
+  background:#0099ff;
+  color:#fff;
 }
 
 header {
@@ -68,7 +57,7 @@ header {
   color:#fff;
 }
 
-/* ナビ */
+/* ナビゲーション */
 .nav {
   display:flex;
   gap:10px;
@@ -87,7 +76,7 @@ header {
   font-size:15px;
 }
 
-/* ボタン色 */
+/* ボタン色分け */
 #nav-all { background:#555; }
 #nav-keio { background:var(--color-keio); }
 #nav-jr { background:var(--color-jr); }
@@ -106,7 +95,7 @@ header {
 .section { display:none; padding:16px; }
 .section.active { display:block; }
 
-/* カード */
+/* URLカード（見やすく改善） */
 .item {
   background:#1c1c1c;
   padding:18px;
@@ -117,14 +106,10 @@ header {
   border-left:6px solid #444;
 }
 
-.item-category-small {
-  font-size:12px;
-  opacity:0.7;
-  margin-bottom:4px;
-}
-
 .item-title { font-size:20px; font-weight:bold; }
+.item-url { font-size:14px; color:#ccc; }
 .item-detail { font-size:16px; margin-top:6px; }
+.item-category { font-size:14px; opacity:0.9; }
 
 .item-buttons {
   display:flex;
@@ -180,7 +165,7 @@ header {
   text-align:center;
 }
 
-/* モーダル（はみ出し完全防止） */
+/* モーダル（はみ出し防止・大型化） */
 .modal-bg {
   position:fixed;
   inset:0;
@@ -193,14 +178,18 @@ header {
 
 .modal {
   background:#1c1c1c;
-  padding:8px;
+  padding:20px;
   border-radius:14px;
   width:90%;
-  max-width:240px;   /* ← 君の希望サイズを維持 */
+  max-width:420px;   /* ← はみ出し防止 */
   box-sizing:border-box;
 }
 
-/* 入力枠を左右対称にする */
+.modal h3 {
+  font-size:20px;
+  margin-bottom:12px;
+}
+
 .modal input,
 .modal textarea,
 .modal select {
@@ -305,6 +294,7 @@ textarea {
       <option value="地下鉄">地下鉄</option>
       <option value="その他">その他</option>
       <option value="資料">資料</option>
+      <option value="画像">画像</option>
       <option value="よく使う">よく使う</option>
     </select>
 
@@ -340,16 +330,17 @@ let isAuthed = false;
 
 /* ナビID変換 */
 function navIdForCategory(cat){
-  return {
-    "all":"nav-all",
-    "京王":"nav-keio",
-    "JR":"nav-jr",
-    "大手私鉄":"nav-ote",
-    "地下鉄":"nav-chika",
-    "その他":"nav-etc",
-    "資料":"nav-data",
-    "よく使う":"nav-fav"
-  }[cat] || "nav-all";
+  switch(cat){
+    case "all": return "nav-all";
+    case "京王": return "nav-keio";
+    case "JR": return "nav-jr";
+    case "大手私鉄": return "nav-ote";
+    case "地下鉄": return "nav-chika";
+    case "その他": return "nav-etc";
+    case "資料": return "nav-data";
+    case "よく使う": return "nav-fav";
+    default: return "nav-all";
+  }
 }
 
 /* 画面切り替え */
@@ -373,6 +364,7 @@ window.showSection = showSection;
 /* カテゴリ切り替え */
 function setCategory(cat){
   currentCategory = cat;
+
   showSection("urls");
 
   document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
@@ -391,43 +383,46 @@ function categoryBorderColor(cat){
     "地下鉄":"var(--color-chika)",
     "その他":"var(--color-etc)",
     "資料":"var(--color-data)",
+    "画像":"var(--color-img)",
     "よく使う":"var(--color-fav)"
   }[cat] || "#444";
 }
 
-/* URL描画（並び順＋indexズレ完全修正版） */
+/* URL描画 */
 function render(){
   const list = document.getElementById("urlList");
   list.innerHTML = "";
 
-  const sorted = urls
-    .filter(item => currentCategory === "all" || item.category === currentCategory)
-    .sort((a,b)=>a.title.localeCompare(b.title,"ja"));
+  let filtered = currentCategory==="all" ? urls : urls.filter(u=>u.category===currentCategory);
+  filtered.sort((a,b)=>a.title.localeCompare(b.title,"ja"));
 
-  sorted.forEach(item=>{
-    const realIndex = urls.indexOf(item);
-
+  filtered.forEach((item,index)=>{
     const div = document.createElement("div");
     div.className="item";
     div.style.borderLeftColor = categoryBorderColor(item.category);
 
+    /* カードタップでURLを開く（ボタンは除外） */
     div.addEventListener("click", (e) => {
       if (e.target.tagName.toLowerCase() === "button") return;
       window.open(item.url, "_blank");
     });
 
+    let buttonsHtml = "";
+    if(isAuthed){
+      buttonsHtml = `
+        <button class="gray" onclick="openEditModal(${index})">編集</button>
+        <button class="danger" onclick="removeUrl(${index})">削除</button>
+      `;
+    }
+
     div.innerHTML = `
       <div class="item-inner">
-        <div class="item-category-small">${item.category}</div>
         <div class="item-title">${item.title}</div>
+        <div class="item-url">${item.url}</div>
         <div class="item-detail">${item.detail||""}</div>
+        <div class="item-category">カテゴリ: ${item.category}</div>
       </div>
-      <div class="item-buttons">
-        ${isAuthed ? `
-          <button class="gray" onclick="openEditModal(${realIndex})">編集</button>
-          <button class="danger" onclick="removeUrl(${realIndex})">削除</button>
-        ` : ""}
-      </div>
+      <div class="item-buttons">${buttonsHtml}</div>
     `;
     list.appendChild(div);
   });
@@ -523,7 +518,7 @@ window.cloudLoad = function(){
   });
 };
 
-/* 天気API（最高気温を表示する方式に変更） */
+/* 天気 */
 const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
 const lat=35.68, lon=139.76;
 
@@ -542,70 +537,45 @@ async function loadCurrentWeather(){
   }catch{ el.textContent="失敗"; }
 }
 
-/* 今日の天気（最高気温） */
+/* 今日の天気 */
 async function loadTodayWeather(){
   const el=document.getElementById("weather-today");
   try{
-    const r=await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
+    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
     const d=await r.json();
-
-    let maxTemp = -999;
-    let icon = "";
-    let desc = "";
-
-    d.list.forEach(item=>{
-      const date = item.dt_txt.split(" ")[0];
-      if(date === d.list[0].dt_txt.split(" ")[0]){
-        if(item.main.temp > maxTemp){
-          maxTemp = item.main.temp;
-          icon = item.weather[0].icon;
-          desc = item.weather[0].description;
-        }
-      }
-    });
-
+    const t=d.daily[0];
     el.innerHTML=`
       <div style="text-align:center;">
-        <img src="https://openweathermap.org/img/wn/${icon}@4x.png" width="80">
-        <div>${desc}</div>
-        <div>${maxTemp}℃</div>
+        <img src="https://openweathermap.org/img/wn/${t.weather[0].icon}@4x.png" width="80">
+        <div>${t.weather[0].description}</div>
+        <div>${t.temp.max}℃ / ${t.temp.min}℃</div>
+        <div>降水確率 ${Math.round(t.pop*100)}%</div>
       </div>`;
   }catch{ el.textContent="失敗"; }
 }
 
-/* 1週間の天気（最高気温） */
+/* 1週間の天気 */
 async function loadWeeklyWeather(){
   const el=document.getElementById("weather-week");
   try{
-    const r=await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
+    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
     const d=await r.json();
+    const days=d.daily.slice(0,7);
 
     const wrap=document.createElement("div");
     wrap.className="weather-week";
 
-    const days = {};
-
-    d.list.forEach(item=>{
-      const date = item.dt_txt.split(" ")[0];
-      if(!days[date]) days[date] = { max:-999, icon:"", desc:"" };
-      if(item.main.temp > days[date].max){
-        days[date].max = item.main.temp;
-        days[date].icon = item.weather[0].icon;
-        days[date].desc = item.weather[0].description;
-      }
-    });
-
-    Object.keys(days).slice(0,7).forEach((date,i)=>{
-      const day = days[date];
-      const label = i===0 ? "今日" : date.replace(/2026-/,"");
+    days.forEach((day,i)=>{
+      const dt=new Date(day.dt*1000);
+      const label=i===0?"今日":`${dt.getMonth()+1}/${dt.getDate()}`;
 
       const box=document.createElement("div");
       box.className="weather-day";
       box.innerHTML=`
         <div>${label}</div>
-        <img src="https://openweathermap.org/img/wn/${day.icon}.png" width="40">
-        <div>${day.desc}</div>
-        <div>${day.max}℃</div>
+        <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}.png" width="40">
+        <div>${day.weather[0].description}</div>
+        <div>${day.temp.max}℃ / ${day.temp.min}℃</div>
       `;
       wrap.appendChild(box);
     });
@@ -636,13 +606,13 @@ function startClock(){
   },1000);
 }
 
-/* テーマ切り替え（最新版） */
+/* テーマ切り替え */
 window.toggleTheme = function(){
-  const isLight = document.body.classList.toggle("light");
-  localStorage.setItem("theme", isLight ? "light" : "dark");
+  document.body.classList.toggle("light");
+  localStorage.setItem("theme",document.body.classList.contains("light")?"light":"dark");
 };
 
-if(localStorage.getItem("theme") === "light"){
+if(localStorage.getItem("theme")==="light"){
   document.body.classList.add("light");
 }
 
