@@ -17,7 +17,6 @@
   --color-fav:#ff8800;
 }
 
-/* ダークモード */
 body {
   margin:0;
   background:#0f0f0f;
@@ -25,7 +24,6 @@ body {
   font-family:system-ui;
 }
 
-/* ライトモード */
 body.light {
   background:#f5f5f5;
   color:#222;
@@ -57,7 +55,6 @@ header {
   color:#fff;
 }
 
-/* ナビゲーション */
 .nav {
   display:flex;
   gap:10px;
@@ -76,7 +73,6 @@ header {
   font-size:15px;
 }
 
-/* ボタン色分け */
 #nav-all { background:#555; }
 #nav-keio { background:var(--color-keio); }
 #nav-jr { background:var(--color-jr); }
@@ -95,7 +91,6 @@ header {
 .section { display:none; padding:16px; }
 .section.active { display:block; }
 
-/* URLカード */
 .item {
   background:#1c1c1c;
   padding:18px;
@@ -120,7 +115,6 @@ header {
 .gray { background:#444; color:#fff; border:none; padding:8px; border-radius:6px; }
 .danger { background:#c33; color:#fff; border:none; padding:8px; border-radius:6px; }
 
-/* 情報ページ */
 .card {
   background:#1c1c1c;
   padding:16px;
@@ -165,7 +159,6 @@ header {
   text-align:center;
 }
 
-/* モーダル */
 .modal-bg {
   position:fixed;
   inset:0;
@@ -183,11 +176,6 @@ header {
   width:90%;
   max-width:420px;
   box-sizing:border-box;
-}
-
-.modal h3 {
-  font-size:20px;
-  margin-bottom:12px;
 }
 
 .modal input,
@@ -216,9 +204,9 @@ textarea {
 </style>
 </head>
 <body>
+
 <header>tetsudo-site2</header>
 
-<!-- ナビ -->
 <div class="nav">
   <button id="nav-all" class="active" onclick="setCategory('all')">すべて</button>
   <button id="nav-keio" onclick="setCategory('京王')">京王</button>
@@ -232,12 +220,10 @@ textarea {
   <button id="nav-settings" onclick="showSection('settings')">設定</button>
 </div>
 
-<!-- URL一覧 -->
 <section id="section-urls" class="section active">
   <div id="urlList"></div>
 </section>
 
-<!-- 情報 -->
 <section id="section-info" class="section">
   <div class="card">
     <h3>天気情報（東京）</h3>
@@ -258,7 +244,6 @@ textarea {
   </div>
 </section>
 
-<!-- 設定 -->
 <section id="section-settings" class="section">
   <div class="card">
     <h3>クラウド同期</h3>
@@ -279,7 +264,6 @@ textarea {
   </div>
 </section>
 
-<!-- モーダル -->
 <div id="modalBg" class="modal-bg">
   <div class="modal">
     <h3 id="modalTitle">新規追加</h3>
@@ -307,9 +291,10 @@ textarea {
 </div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
+/* Firebase設定 */
 const firebaseConfig = {
   apiKey:"d47572a1cd7e50746a614ef286b5375c",
   authDomain:"tetsudo-site6.firebaseapp.com",
@@ -324,6 +309,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase();
 const auth = getAuth();
 
+/* ローカルデータ */
 let urls = JSON.parse(localStorage.getItem("urls") || "[]");
 let currentCategory = "all";
 let editIndex = null;
@@ -344,7 +330,7 @@ function navIdForCategory(cat){
 }
 
 /* 画面切り替え */
-function showSection(name){
+window.showSection = function(name){
   document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
   document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
 
@@ -358,11 +344,10 @@ function showSection(name){
     document.getElementById("section-urls").classList.add("active");
     document.getElementById("nav-all").classList.add("active");
   }
-}
-window.showSection = showSection;
+};
 
 /* カテゴリ切り替え */
-function setCategory(cat){
+window.setCategory = function(cat){
   currentCategory = cat;
   showSection("urls");
 
@@ -370,8 +355,7 @@ function setCategory(cat){
   document.getElementById(navIdForCategory(cat)).classList.add("active");
 
   render();
-}
-window.setCategory = setCategory;
+};
 
 /* カード色 */
 function categoryBorderColor(cat){
@@ -507,14 +491,21 @@ window.cloudSave = function(silent=false){
   });
 };
 
-/* Firebase受信 */
-window.cloudLoad = function(){
-  onValue(ref(db,"urlData"),snap=>{
-    urls=snap.val()||[];
-    localStorage.setItem("urls",JSON.stringify(urls));
-    render();
-  });
+/* Firebase受信（強制読み込み） */
+window.cloudLoad = async function(){
+  const snapshot = await get(ref(db,"urlData"));
+  urls = snapshot.val() || [];
+  localStorage.setItem("urls",JSON.stringify(urls));
+  render();
+  alert("クラウドから受信しました");
 };
+
+/* 自動同期（リアルタイム） */
+onValue(ref(db,"urlData"),snap=>{
+  urls=snap.val()||[];
+  localStorage.setItem("urls",JSON.stringify(urls));
+  render();
+});
 
 /* 天気API */
 const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
