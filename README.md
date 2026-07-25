@@ -95,7 +95,7 @@ header {
 .section { display:none; padding:16px; }
 .section.active { display:block; }
 
-/* URLカード（見やすく改善） */
+/* URLカード */
 .item {
   background:#1c1c1c;
   padding:18px;
@@ -165,7 +165,7 @@ header {
   text-align:center;
 }
 
-/* モーダル（はみ出し防止・大型化） */
+/* モーダル改善版 */
 .modal-bg {
   position:fixed;
   inset:0;
@@ -180,14 +180,9 @@ header {
   background:#1c1c1c;
   padding:20px;
   border-radius:14px;
-  width:90%;
-  max-width:420px;   /* ← はみ出し防止 */
+  width:95%;
+  max-width:360px; /* ← スマホ向けに最適化 */
   box-sizing:border-box;
-}
-
-.modal h3 {
-  font-size:20px;
-  margin-bottom:12px;
 }
 
 .modal input,
@@ -201,6 +196,7 @@ header {
   color:#fff;
   font-size:15px;
   margin-bottom:12px;
+  box-sizing:border-box; /* ← はみ出し防止 */
 }
 
 textarea {
@@ -214,6 +210,7 @@ textarea {
   gap:10px;
 }
 </style>
+</head>
 <body>
 <header>tetsudo-site2</header>
 
@@ -277,7 +274,6 @@ textarea {
     <button class="primary" onclick="toggleTheme()">ライト / ダーク切り替え</button>
   </div>
 </section>
-
 <!-- モーダル -->
 <div id="modalBg" class="modal-bg">
   <div class="modal">
@@ -304,17 +300,19 @@ textarea {
     </div>
   </div>
 </div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
+/* ★ Firebase設定（storageBucket 修正済み） */
 const firebaseConfig = {
   apiKey:"d47572a1cd7e50746a614ef286b5375c",
   authDomain:"tetsudo-site6.firebaseapp.com",
   databaseURL:"https://tetsudo-site6-default-rtdb.firebaseio.com",
   projectId:"tetsudo-site6",
-  storageBucket:"tetsudo-site6.firebasestorage.app",
+  storageBucket:"tetsudo-site6.appspot.com", /* ← 修正ポイント */
   messagingSenderId:"563943849207",
   appId:"1:563943849207:web:1c813365201cb431d6e7f2"
 };
@@ -323,6 +321,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase();
 const auth = getAuth();
 
+/* ローカルデータ */
 let urls = JSON.parse(localStorage.getItem("urls") || "[]");
 let currentCategory = "all";
 let editIndex = null;
@@ -330,17 +329,16 @@ let isAuthed = false;
 
 /* ナビID変換 */
 function navIdForCategory(cat){
-  switch(cat){
-    case "all": return "nav-all";
-    case "京王": return "nav-keio";
-    case "JR": return "nav-jr";
-    case "大手私鉄": return "nav-ote";
-    case "地下鉄": return "nav-chika";
-    case "その他": return "nav-etc";
-    case "資料": return "nav-data";
-    case "よく使う": return "nav-fav";
-    default: return "nav-all";
-  }
+  return {
+    "all":"nav-all",
+    "京王":"nav-keio",
+    "JR":"nav-jr",
+    "大手私鉄":"nav-ote",
+    "地下鉄":"nav-chika",
+    "その他":"nav-etc",
+    "資料":"nav-data",
+    "よく使う":"nav-fav"
+  }[cat] || "nav-all";
 }
 
 /* 画面切り替え */
@@ -364,7 +362,6 @@ window.showSection = showSection;
 /* カテゴリ切り替え */
 function setCategory(cat){
   currentCategory = cat;
-
   showSection("urls");
 
   document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
@@ -501,42 +498,6 @@ window.removeUrl = function(i){
   cloudSave(true);
   render();
 };
-
-/* Firebase保存 */
-window.cloudSave = function(silent=false){
-  set(ref(db,"urlData"),urls).then(()=>{
-    if(!silent) alert("保存しました");
-  });
-};
-
-/* Firebase受信 */
-window.cloudLoad = function(){
-  onValue(ref(db,"urlData"),snap=>{
-    urls=snap.val()||[];
-    localStorage.setItem("urls",JSON.stringify(urls));
-    render();
-  });
-};
-
-/* 天気 */
-const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
-const lat=35.68, lon=139.76;
-
-/* 現在の天気 */
-async function loadCurrentWeather(){
-  const el=document.getElementById("weather-now");
-  try{
-    const r=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
-    const d=await r.json();
-    el.innerHTML=`
-      <div style="text-align:center;">
-        <img src="https://openweathermap.org/img/wn/${d.weather[0].icon}@4x.png" width="80">
-        <div>${d.weather[0].description}</div>
-        <div>${d.main.temp}℃</div>
-      </div>`;
-  }catch{ el.textContent="失敗"; }
-}
-
 /* 今日の天気 */
 async function loadTodayWeather(){
   const el=document.getElementById("weather-today");
@@ -616,8 +577,35 @@ if(localStorage.getItem("theme")==="light"){
   document.body.classList.add("light");
 }
 
+/* Firebase保存 */
+window.cloudSave = function(silent=false){
+  set(ref(db,"urlData"),urls).then(()=>{
+    if(!silent) alert("保存しました");
+  }).catch(err=>{
+    alert("保存エラー: " + err.message);
+  });
+};
+
+/* Firebase受信 */
+window.cloudLoad = function(){
+  onValue(ref(db,"urlData"),snap=>{
+    urls=snap.val()||[];
+    localStorage.setItem("urls",JSON.stringify(urls));
+    render();
+  }, err=>{
+    alert("受信エラー: " + err.message);
+  });
+};
+
+/* 天気API設定 */
+const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
+const lat=35.68, lon=139.76;
+
 /* 初期化 */
-signInAnonymously(auth).then(()=>cloudLoad());
+signInAnonymously(auth)
+  .then(()=>cloudLoad())
+  .catch(err=>alert("Firebase認証エラー: " + err.message));
+
 render();
 startClock();
 loadCurrentWeather();
