@@ -17,6 +17,7 @@
   --color-fav:#ff8800;
 }
 
+/* ダークモード */
 body {
   margin:0;
   background:#0f0f0f;
@@ -24,6 +25,7 @@ body {
   font-family:system-ui;
 }
 
+/* ライトモード */
 body.light {
   background:#f5f5f5;
   color:#222;
@@ -55,6 +57,7 @@ header {
   color:#fff;
 }
 
+/* ナビゲーション */
 .nav {
   display:flex;
   gap:10px;
@@ -73,6 +76,7 @@ header {
   font-size:15px;
 }
 
+/* ボタン色分け */
 #nav-all { background:#555; }
 #nav-keio { background:var(--color-keio); }
 #nav-jr { background:var(--color-jr); }
@@ -91,6 +95,7 @@ header {
 .section { display:none; padding:16px; }
 .section.active { display:block; }
 
+/* URLカード */
 .item {
   background:#1c1c1c;
   padding:18px;
@@ -115,6 +120,7 @@ header {
 .gray { background:#444; color:#fff; border:none; padding:8px; border-radius:6px; }
 .danger { background:#c33; color:#fff; border:none; padding:8px; border-radius:6px; }
 
+/* 情報ページ */
 .card {
   background:#1c1c1c;
   padding:16px;
@@ -158,12 +164,61 @@ header {
   width:130px;
   text-align:center;
 }
+
+/* モーダル */
+.modal-bg {
+  position:fixed;
+  inset:0;
+  background:#000a;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+
+.modal {
+  background:#1c1c1c;
+  padding:20px;
+  border-radius:14px;
+  width:90%;
+  max-width:420px;
+  box-sizing:border-box;
+}
+
+.modal h3 {
+  font-size:20px;
+  margin-bottom:12px;
+}
+
+.modal input,
+.modal textarea,
+.modal select {
+  width:100%;
+  padding:12px;
+  border-radius:8px;
+  border:none;
+  background:#2a2a2a;
+  color:#fff;
+  font-size:15px;
+  margin-bottom:12px;
+}
+
+textarea {
+  min-height:120px;
+  resize:none;
+}
+
+.modal-buttons {
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
 </style>
 </head>
 <body>
-
 <header>tetsudo-site2</header>
 
+<!-- ナビ -->
 <div class="nav">
   <button id="nav-all" class="active" onclick="setCategory('all')">すべて</button>
   <button id="nav-keio" onclick="setCategory('京王')">京王</button>
@@ -177,10 +232,12 @@ header {
   <button id="nav-settings" onclick="showSection('settings')">設定</button>
 </div>
 
+<!-- URL一覧 -->
 <section id="section-urls" class="section active">
   <div id="urlList"></div>
 </section>
 
+<!-- 情報 -->
 <section id="section-info" class="section">
   <div class="card">
     <h3>天気情報（東京）</h3>
@@ -200,6 +257,8 @@ header {
     <div id="datetime">読み込み中...</div>
   </div>
 </section>
+
+<!-- 設定 -->
 <section id="section-settings" class="section">
   <div class="card">
     <h3>クラウド同期</h3>
@@ -246,7 +305,6 @@ header {
     </div>
   </div>
 </div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
@@ -257,7 +315,7 @@ const firebaseConfig = {
   authDomain:"tetsudo-site6.firebaseapp.com",
   databaseURL:"https://tetsudo-site6-default-rtdb.firebaseio.com",
   projectId:"tetsudo-site6",
-  storageBucket:"tetsudo-site6.appspot.com",  /* ← 修正済み */
+  storageBucket:"tetsudo-site6.firebasestorage.app",
   messagingSenderId:"563943849207",
   appId:"1:563943849207:web:1c813365201cb431d6e7f2"
 };
@@ -270,6 +328,65 @@ let urls = JSON.parse(localStorage.getItem("urls") || "[]");
 let currentCategory = "all";
 let editIndex = null;
 let isAuthed = false;
+
+/* ナビID変換 */
+function navIdForCategory(cat){
+  return {
+    "all":"nav-all",
+    "京王":"nav-keio",
+    "JR":"nav-jr",
+    "大手私鉄":"nav-ote",
+    "地下鉄":"nav-chika",
+    "その他":"nav-etc",
+    "資料":"nav-data",
+    "よく使う":"nav-fav"
+  }[cat] || "nav-all";
+}
+
+/* 画面切り替え */
+function showSection(name){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+
+  if(name==="info"){
+    document.getElementById("section-info").classList.add("active");
+    document.getElementById("nav-info").classList.add("active");
+  }else if(name==="settings"){
+    document.getElementById("section-settings").classList.add("active");
+    document.getElementById("nav-settings").classList.add("active");
+  }else{
+    document.getElementById("section-urls").classList.add("active");
+    document.getElementById("nav-all").classList.add("active");
+  }
+}
+window.showSection = showSection;
+
+/* カテゴリ切り替え */
+function setCategory(cat){
+  currentCategory = cat;
+  showSection("urls");
+
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+  document.getElementById(navIdForCategory(cat)).classList.add("active");
+
+  render();
+}
+window.setCategory = setCategory;
+
+/* カード色 */
+function categoryBorderColor(cat){
+  return {
+    "京王":"var(--color-keio)",
+    "JR":"var(--color-jr)",
+    "大手私鉄":"var(--color-ote)",
+    "地下鉄":"var(--color-chika)",
+    "その他":"var(--color-etc)",
+    "資料":"var(--color-data)",
+    "画像":"var(--color-img)",
+    "よく使う":"var(--color-fav)"
+  }[cat] || "#444";
+}
+
 /* URL描画 */
 function render(){
   const list = document.getElementById("urlList");
@@ -390,19 +507,16 @@ window.cloudSave = function(silent=false){
   });
 };
 
-/* Firebase受信（修正版） */
+/* Firebase受信 */
 window.cloudLoad = function(){
   onValue(ref(db,"urlData"),snap=>{
-    const data = snap.val();
-    if(data){
-      urls = data;
-      localStorage.setItem("urls",JSON.stringify(urls));
-      render();
-    }
+    urls=snap.val()||[];
+    localStorage.setItem("urls",JSON.stringify(urls));
+    render();
   });
 };
 
-/* 天気 */
+/* 天気API */
 const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
 const lat=35.68, lon=139.76;
 
@@ -500,12 +614,8 @@ if(localStorage.getItem("theme")==="light"){
   document.body.classList.add("light");
 }
 
-/* 初期化（修正版） */
-signInAnonymously(auth)
-  .then(() => {
-    cloudLoad();   // ← 受信が確実に動く
-  });
-
+/* 初期化 */
+signInAnonymously(auth).then(()=>cloudLoad());
 render();
 startClock();
 loadCurrentWeather();
