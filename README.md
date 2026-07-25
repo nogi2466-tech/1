@@ -24,33 +24,39 @@ body {
   font-family:system-ui;
 }
 
-/* ライトモード（白色に修正済み） */
+/* ライトモード（完全白化） */
 body.light {
   background:#ffffff;
   color:#000000;
 }
 
+body.light .section,
 body.light .card,
 body.light .item,
-body.light .modal {
-  background:#f5f5f5;
-  color:#000;
+body.light .modal,
+body.light .weather-day {
+  background:#ffffff !important;
+  color:#000 !important;
+}
+
+body.light .item-category-small {
+  color:#444 !important;
 }
 
 body.light .nav {
-  background:#eaeaea;
+  background:#f0f0f0 !important;
 }
 
 body.light .nav button {
-  background:#ffffff;
-  color:#000;
-  border:1px solid #ccc;
+  background:#ffffff !important;
+  color:#000 !important;
+  border:1px solid #ccc !important;
 }
 
 body.light .nav button.active {
-  background:#0099ff;
-  color:#fff;
-  border-color:#0099ff;
+  background:#0099ff !important;
+  color:#fff !important;
+  border-color:#0099ff !important;
 }
 
 header {
@@ -187,10 +193,10 @@ header {
 
 .modal {
   background:#1c1c1c;
-  padding:10px;        /* ← さらに縮小 */
+  padding:8px;        /* ← さらに縮小 */
   border-radius:14px;
-  width:95%;           /* ← 画面幅に合わせる */
-  max-width:260px;     /* ← スマホでも絶対収まる */
+  width:90%;          /* ← 画面幅に合わせる */
+  max-width:240px;    /* ← スマホでも絶対収まる */
   box-sizing:border-box;
 }
 
@@ -540,7 +546,7 @@ async function loadCurrentWeather(){
   }catch{ el.textContent="失敗"; }
 }
 
-/* 今日の天気（forecast API） */
+/* 今日の天気 */
 async function loadTodayWeather(){
   const el=document.getElementById("weather-today");
   try{
@@ -557,7 +563,7 @@ async function loadTodayWeather(){
   }catch{ el.textContent="失敗"; }
 }
 
-/* 1週間の天気（forecast API を日ごとにまとめる） */
+/* 1週間の天気 */
 async function loadWeeklyWeather(){
   const el=document.getElementById("weather-week");
   try{
