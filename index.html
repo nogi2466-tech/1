@@ -158,54 +158,6 @@ header {
   width:130px;
   text-align:center;
 }
-
-.modal-bg {
-  position:fixed;
-  inset:0;
-  background:#000a;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:1000;
-}
-
-.modal {
-  background:#1c1c1c;
-  padding:20px;
-  border-radius:14px;
-  width:90%;
-  max-width:420px;
-  box-sizing:border-box;
-}
-
-.modal h3 {
-  font-size:20px;
-  margin-bottom:12px;
-}
-
-.modal input,
-.modal textarea,
-.modal select {
-  width:100%;
-  padding:12px;
-  border-radius:8px;
-  border:none;
-  background:#2a2a2a;
-  color:#fff;
-  font-size:15px;
-  margin-bottom:12px;
-}
-
-textarea {
-  min-height:120px;
-  resize:none;
-}
-
-.modal-buttons {
-  display:flex;
-  justify-content:flex-end;
-  gap:10px;
-}
 </style>
 </head>
 <body>
@@ -248,7 +200,6 @@ textarea {
     <div id="datetime">読み込み中...</div>
   </div>
 </section>
-
 <section id="section-settings" class="section">
   <div class="card">
     <h3>クラウド同期</h3>
@@ -269,6 +220,7 @@ textarea {
   </div>
 </section>
 
+<!-- モーダル -->
 <div id="modalBg" class="modal-bg">
   <div class="modal">
     <h3 id="modalTitle">新規追加</h3>
@@ -318,67 +270,6 @@ let urls = JSON.parse(localStorage.getItem("urls") || "[]");
 let currentCategory = "all";
 let editIndex = null;
 let isAuthed = false;
-
-/* ナビID変換 */
-function navIdForCategory(cat){
-  switch(cat){
-    case "all": return "nav-all";
-    case "京王": return "nav-keio";
-    case "JR": return "nav-jr";
-    case "大手私鉄": return "nav-ote";
-    case "地下鉄": return "nav-chika";
-    case "その他": return "nav-etc";
-    case "資料": return "nav-data";
-    case "よく使う": return "nav-fav";
-    default: return "nav-all";
-  }
-}
-
-/* 画面切り替え */
-function showSection(name){
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
-
-  if(name==="info"){
-    document.getElementById("section-info").classList.add("active");
-    document.getElementById("nav-info").classList.add("active");
-  }else if(name==="settings"){
-    document.getElementById("section-settings").classList.add("active");
-    document.getElementById("nav-settings").classList.add("active");
-  }else{
-    document.getElementById("section-urls").classList.add("active");
-    document.getElementById("nav-all").classList.add("active");
-  }
-}
-window.showSection = showSection;
-
-/* カテゴリ切り替え */
-function setCategory(cat){
-  currentCategory = cat;
-
-  showSection("urls");
-
-  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
-  document.getElementById(navIdForCategory(cat)).classList.add("active");
-
-  render();
-}
-window.setCategory = setCategory;
-
-/* カード色 */
-function categoryBorderColor(cat){
-  return {
-    "京王":"var(--color-keio)",
-    "JR":"var(--color-jr)",
-    "大手私鉄":"var(--color-ote)",
-    "地下鉄":"var(--color-chika)",
-    "その他":"var(--color-etc)",
-    "資料":"var(--color-data)",
-    "画像":"var(--color-img)",
-    "よく使う":"var(--color-fav)"
-  }[cat] || "#444";
-}
-
 /* URL描画 */
 function render(){
   const list = document.getElementById("urlList");
@@ -499,12 +390,15 @@ window.cloudSave = function(silent=false){
   });
 };
 
-/* Firebase受信 */
+/* Firebase受信（修正版） */
 window.cloudLoad = function(){
   onValue(ref(db,"urlData"),snap=>{
-    urls=snap.val()||[];
-    localStorage.setItem("urls",JSON.stringify(urls));
-    render();
+    const data = snap.val();
+    if(data){
+      urls = data;
+      localStorage.setItem("urls",JSON.stringify(urls));
+      render();
+    }
   });
 };
 
@@ -514,7 +408,7 @@ const lat=35.68, lon=139.76;
 
 /* 現在の天気 */
 async function loadCurrentWeather(){
-    const el=document.getElementById("weather-now");
+  const el=document.getElementById("weather-now");
   try{
     const r=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
     const d=await r.json();
@@ -606,13 +500,18 @@ if(localStorage.getItem("theme")==="light"){
   document.body.classList.add("light");
 }
 
-/* 初期化 */
-signInAnonymously(auth).then(()=>cloudLoad());
+/* 初期化（修正版） */
+signInAnonymously(auth)
+  .then(() => {
+    cloudLoad();   // ← 受信が確実に動く
+  });
+
 render();
 startClock();
 loadCurrentWeather();
 loadTodayWeather();
 loadWeeklyWeather();
 </script>
+
 </body>
 </html>
