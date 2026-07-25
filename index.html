@@ -25,23 +25,23 @@ body {
   font-family:system-ui;
 }
 
-/* ライトモード */
+/* ライトモード（黒系に変更） */
 body.light {
-  background:#f5f5f5;
-  color:#222;
+  background:#222;
+  color:#eee;
 }
 body.light .card,
 body.light .item,
 body.light .modal {
-  background:#fff;
-  color:#222;
+  background:#2a2a2a;
+  color:#fff;
 }
 body.light .nav {
-  background:#e0e0e0;
+  background:#333;
 }
 body.light .nav button {
-  background:#ccc;
-  color:#222;
+  background:#444;
+  color:#fff;
 }
 body.light .nav button.active {
   background:#0099ff;
@@ -57,7 +57,7 @@ header {
   color:#fff;
 }
 
-/* ナビゲーション */
+/* ナビ */
 .nav {
   display:flex;
   gap:10px;
@@ -76,7 +76,7 @@ header {
   font-size:15px;
 }
 
-/* ボタン色分け */
+/* ボタン色 */
 #nav-all { background:#555; }
 #nav-keio { background:var(--color-keio); }
 #nav-jr { background:var(--color-jr); }
@@ -95,7 +95,7 @@ header {
 .section { display:none; padding:16px; }
 .section.active { display:block; }
 
-/* URLカード（見やすく改善） */
+/* カード（最新修正版） */
 .item {
   background:#1c1c1c;
   padding:18px;
@@ -106,10 +106,14 @@ header {
   border-left:6px solid #444;
 }
 
+.item-category-small {
+  font-size:12px;
+  opacity:0.7;
+  margin-bottom:4px;
+}
+
 .item-title { font-size:20px; font-weight:bold; }
-.item-url { font-size:14px; color:#ccc; }
 .item-detail { font-size:16px; margin-top:6px; }
-.item-category { font-size:14px; opacity:0.9; }
 
 .item-buttons {
   display:flex;
@@ -165,7 +169,7 @@ header {
   text-align:center;
 }
 
-/* モーダル（はみ出し防止・大型化） */
+/* モーダル（はみ出し完全防止） */
 .modal-bg {
   position:fixed;
   inset:0;
@@ -180,8 +184,8 @@ header {
   background:#1c1c1c;
   padding:20px;
   border-radius:14px;
-  width:90%;
-  max-width:420px;   /* ← はみ出し防止 */
+  width:85%;
+  max-width:360px;   /* ← はみ出し防止の最新値 */
   box-sizing:border-box;
 }
 
@@ -330,17 +334,16 @@ let isAuthed = false;
 
 /* ナビID変換 */
 function navIdForCategory(cat){
-  switch(cat){
-    case "all": return "nav-all";
-    case "京王": return "nav-keio";
-    case "JR": return "nav-jr";
-    case "大手私鉄": return "nav-ote";
-    case "地下鉄": return "nav-chika";
-    case "その他": return "nav-etc";
-    case "資料": return "nav-data";
-    case "よく使う": return "nav-fav";
-    default: return "nav-all";
-  }
+  return {
+    "all":"nav-all",
+    "京王":"nav-keio",
+    "JR":"nav-jr",
+    "大手私鉄":"nav-ote",
+    "地下鉄":"nav-chika",
+    "その他":"nav-etc",
+    "資料":"nav-data",
+    "よく使う":"nav-fav"
+  }[cat] || "nav-all";
 }
 
 /* 画面切り替え */
@@ -364,7 +367,6 @@ window.showSection = showSection;
 /* カテゴリ切り替え */
 function setCategory(cat){
   currentCategory = cat;
-
   showSection("urls");
 
   document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
@@ -388,7 +390,7 @@ function categoryBorderColor(cat){
   }[cat] || "#444";
 }
 
-/* URL描画 */
+/* URL描画（最新版） */
 function render(){
   const list = document.getElementById("urlList");
   list.innerHTML = "";
@@ -415,12 +417,12 @@ function render(){
       `;
     }
 
+    /* URL 表示なし、カテゴリを左上に小さく表示 */
     div.innerHTML = `
       <div class="item-inner">
+        <div class="item-category-small">${item.category}</div>
         <div class="item-title">${item.title}</div>
-        <div class="item-url">${item.url}</div>
         <div class="item-detail">${item.detail||""}</div>
-        <div class="item-category">カテゴリ: ${item.category}</div>
       </div>
       <div class="item-buttons">${buttonsHtml}</div>
     `;
@@ -518,7 +520,7 @@ window.cloudLoad = function(){
   });
 };
 
-/* 天気 */
+/* 天気API */
 const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
 const lat=35.68, lon=139.76;
 
