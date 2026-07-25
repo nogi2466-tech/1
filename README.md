@@ -95,21 +95,21 @@ header {
 .section { display:none; padding:16px; }
 .section.active { display:block; }
 
-/* URLカード */
+/* URLカード（見やすく改善） */
 .item {
   background:#1c1c1c;
-  padding:14px;
-  border-radius:10px;
-  margin-bottom:12px;
+  padding:18px;
+  border-radius:12px;
+  margin-bottom:14px;
   display:flex;
   justify-content:space-between;
   border-left:6px solid #444;
 }
 
-.item-title { font-size:17px; font-weight:bold; }
-.item-url { font-size:13px; color:#ccc; }
-.item-detail { font-size:13px; margin-top:4px; }
-.item-category { font-size:12px; opacity:0.8; }
+.item-title { font-size:20px; font-weight:bold; }
+.item-url { font-size:14px; color:#ccc; }
+.item-detail { font-size:16px; margin-top:6px; }
+.item-category { font-size:14px; opacity:0.9; }
 
 .item-buttons {
   display:flex;
@@ -165,7 +165,7 @@ header {
   text-align:center;
 }
 
-/* モーダル（大型化） */
+/* モーダル（はみ出し防止・大型化） */
 .modal-bg {
   position:fixed;
   inset:0;
@@ -180,8 +180,8 @@ header {
   background:#1c1c1c;
   padding:20px;
   border-radius:14px;
-  width:95%;
-  max-width:500px;
+  width:90%;
+  max-width:420px;   /* ← はみ出し防止 */
   box-sizing:border-box;
 }
 
@@ -440,25 +440,34 @@ window.checkPass = function(){
   }
 };
 
-/* モーダル */
+/* モーダル（追加） */
 window.openAddModal = function(){
   editIndex=null;
+
   document.getElementById("modalTitle").textContent="新規追加";
+  document.querySelector(".modal-buttons .primary").textContent = "追加する";
+
   document.getElementById("formTitle").value="";
   document.getElementById("formUrl").value="";
   document.getElementById("formDetail").value="";
   document.getElementById("formCategory").value="京王";
+
   document.getElementById("modalBg").style.display="flex";
 };
 
+/* モーダル（編集） */
 window.openEditModal = function(i){
   editIndex=i;
   const item=urls[i];
+
   document.getElementById("modalTitle").textContent="編集";
+  document.querySelector(".modal-buttons .primary").textContent = "上書き保存";
+
   document.getElementById("formTitle").value=item.title;
   document.getElementById("formUrl").value=item.url;
   document.getElementById("formDetail").value=item.detail;
   document.getElementById("formCategory").value=item.category;
+
   document.getElementById("modalBg").style.display="flex";
 };
 
