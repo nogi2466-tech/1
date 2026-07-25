@@ -13,7 +13,6 @@
   --color-chika:#2980b9;
   --color-etc:#7f8c8d;
   --color-data:#f1c40f;
-  --color-img:#d35400;
   --color-fav:#ff8800;
 }
 
@@ -95,7 +94,7 @@ header {
 .section { display:none; padding:16px; }
 .section.active { display:block; }
 
-/* カード（最新修正版） */
+/* カード（最新版） */
 .item {
   background:#1c1c1c;
   padding:18px;
@@ -182,10 +181,10 @@ header {
 
 .modal {
   background:#1c1c1c;
-  padding:20px;
+  padding:16px;
   border-radius:14px;
-  width:85%;
-  max-width:360px;   /* ← はみ出し防止の最新値 */
+  width:90%;
+  max-width:300px;   /* ← 完全に収まるサイズ */
   box-sizing:border-box;
 }
 
@@ -298,7 +297,6 @@ textarea {
       <option value="地下鉄">地下鉄</option>
       <option value="その他">その他</option>
       <option value="資料">資料</option>
-      <option value="画像">画像</option>
       <option value="よく使う">よく使う</option>
     </select>
 
@@ -385,20 +383,18 @@ function categoryBorderColor(cat){
     "地下鉄":"var(--color-chika)",
     "その他":"var(--color-etc)",
     "資料":"var(--color-data)",
-    "画像":"var(--color-img)",
     "よく使う":"var(--color-fav)"
   }[cat] || "#444";
 }
 
-/* URL描画（最新版） */
+/* URL描画（indexズレ完全修正版） */
 function render(){
   const list = document.getElementById("urlList");
   list.innerHTML = "";
 
-  let filtered = currentCategory==="all" ? urls : urls.filter(u=>u.category===currentCategory);
-  filtered.sort((a,b)=>a.title.localeCompare(b.title,"ja"));
+  urls.forEach((item, realIndex)=>{
+    if(currentCategory !== "all" && item.category !== currentCategory) return;
 
-  filtered.forEach((item,index)=>{
     const div = document.createElement("div");
     div.className="item";
     div.style.borderLeftColor = categoryBorderColor(item.category);
@@ -412,8 +408,8 @@ function render(){
     let buttonsHtml = "";
     if(isAuthed){
       buttonsHtml = `
-        <button class="gray" onclick="openEditModal(${index})">編集</button>
-        <button class="danger" onclick="removeUrl(${index})">削除</button>
+        <button class="gray" onclick="openEditModal(${realIndex})">編集</button>
+        <button class="danger" onclick="removeUrl(${realIndex})">削除</button>
       `;
     }
 
@@ -520,7 +516,7 @@ window.cloudLoad = function(){
   });
 };
 
-/* 天気API */
+/* 天気API（安定版） */
 const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
 const lat=35.68, lon=139.76;
 
@@ -539,37 +535,43 @@ async function loadCurrentWeather(){
   }catch{ el.textContent="失敗"; }
 }
 
-/* 今日の天気 */
+/* 今日の天気（forecast API） */
 async function loadTodayWeather(){
   const el=document.getElementById("weather-today");
   try{
-    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
+    const r=await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
     const d=await r.json();
-    const t=d.daily[0];
+    const t=d.list[0];
+
     el.innerHTML=`
       <div style="text-align:center;">
         <img src="https://openweathermap.org/img/wn/${t.weather[0].icon}@4x.png" width="80">
         <div>${t.weather[0].description}</div>
-        <div>${t.temp.max}℃ / ${t.temp.min}℃</div>
-        <div>降水確率 ${Math.round(t.pop*100)}%</div>
+        <div>${t.main.temp}℃</div>
       </div>`;
   }catch{ el.textContent="失敗"; }
 }
 
-/* 1週間の天気 */
+/* 1週間の天気（forecast API を日ごとにまとめる） */
 async function loadWeeklyWeather(){
   const el=document.getElementById("weather-week");
   try{
-    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
+    const r=await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
     const d=await r.json();
-    const days=d.daily.slice(0,7);
 
     const wrap=document.createElement("div");
     wrap.className="weather-week";
 
-    days.forEach((day,i)=>{
-      const dt=new Date(day.dt*1000);
-      const label=i===0?"今日":`${dt.getMonth()+1}/${dt.getDate()}`;
+    const days = {};
+
+    d.list.forEach(item=>{
+      const date = item.dt_txt.split(" ")[0];
+      if(!days[date]) days[date] = item;
+    });
+
+    Object.keys(days).slice(0,7).forEach((date,i)=>{
+      const day = days[date];
+      const label = i===0 ? "今日" : date.replace(/2026-/,"");
 
       const box=document.createElement("div");
       box.className="weather-day";
@@ -577,7 +579,7 @@ async function loadWeeklyWeather(){
         <div>${label}</div>
         <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}.png" width="40">
         <div>${day.weather[0].description}</div>
-        <div>${day.temp.max}℃ / ${day.temp.min}℃</div>
+        <div>${day.main.temp}℃</div>
       `;
       wrap.appendChild(box);
     });
@@ -608,13 +610,13 @@ function startClock(){
   },1000);
 }
 
-/* テーマ切り替え */
+/* テーマ切り替え（最新版） */
 window.toggleTheme = function(){
-  document.body.classList.toggle("light");
-  localStorage.setItem("theme",document.body.classList.contains("light")?"light":"dark");
+  const isLight = document.body.classList.toggle("light");
+  localStorage.setItem("theme", isLight ? "light" : "dark");
 };
 
-if(localStorage.getItem("theme")==="light"){
+if(localStorage.getItem("theme") === "light"){
   document.body.classList.add("light");
 }
 
