@@ -17,7 +17,6 @@
   --color-fav:#ff8800;
 }
 
-/* ダークモード */
 body {
   margin:0;
   background:#0f0f0f;
@@ -25,7 +24,6 @@ body {
   font-family:system-ui;
 }
 
-/* ライトモード */
 body.light {
   background:#f5f5f5;
   color:#222;
@@ -57,7 +55,6 @@ header {
   color:#fff;
 }
 
-/* ナビゲーション */
 .nav {
   display:flex;
   gap:10px;
@@ -76,7 +73,6 @@ header {
   font-size:15px;
 }
 
-/* ボタン色分け */
 #nav-all { background:#555; }
 #nav-keio { background:var(--color-keio); }
 #nav-jr { background:var(--color-jr); }
@@ -95,7 +91,6 @@ header {
 .section { display:none; padding:16px; }
 .section.active { display:block; }
 
-/* URLカード */
 .item {
   background:#1c1c1c;
   padding:18px;
@@ -120,7 +115,6 @@ header {
 .gray { background:#444; color:#fff; border:none; padding:8px; border-radius:6px; }
 .danger { background:#c33; color:#fff; border:none; padding:8px; border-radius:6px; }
 
-/* 情報ページ */
 .card {
   background:#1c1c1c;
   padding:16px;
@@ -165,7 +159,6 @@ header {
   text-align:center;
 }
 
-/* モーダル改善版 */
 .modal-bg {
   position:fixed;
   inset:0;
@@ -180,9 +173,14 @@ header {
   background:#1c1c1c;
   padding:20px;
   border-radius:14px;
-  width:95%;
-  max-width:360px; /* ← スマホ向けに最適化 */
+  width:90%;
+  max-width:420px;
   box-sizing:border-box;
+}
+
+.modal h3 {
+  font-size:20px;
+  margin-bottom:12px;
 }
 
 .modal input,
@@ -196,7 +194,6 @@ header {
   color:#fff;
   font-size:15px;
   margin-bottom:12px;
-  box-sizing:border-box; /* ← はみ出し防止 */
 }
 
 textarea {
@@ -212,9 +209,9 @@ textarea {
 </style>
 </head>
 <body>
+
 <header>tetsudo-site2</header>
 
-<!-- ナビ -->
 <div class="nav">
   <button id="nav-all" class="active" onclick="setCategory('all')">すべて</button>
   <button id="nav-keio" onclick="setCategory('京王')">京王</button>
@@ -228,12 +225,10 @@ textarea {
   <button id="nav-settings" onclick="showSection('settings')">設定</button>
 </div>
 
-<!-- URL一覧 -->
 <section id="section-urls" class="section active">
   <div id="urlList"></div>
 </section>
 
-<!-- 情報 -->
 <section id="section-info" class="section">
   <div class="card">
     <h3>天気情報（東京）</h3>
@@ -254,7 +249,6 @@ textarea {
   </div>
 </section>
 
-<!-- 設定 -->
 <section id="section-settings" class="section">
   <div class="card">
     <h3>クラウド同期</h3>
@@ -274,7 +268,7 @@ textarea {
     <button class="primary" onclick="toggleTheme()">ライト / ダーク切り替え</button>
   </div>
 </section>
-<!-- モーダル -->
+
 <div id="modalBg" class="modal-bg">
   <div class="modal">
     <h3 id="modalTitle">新規追加</h3>
@@ -306,13 +300,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/fireba
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
-/* ★ Firebase設定（storageBucket 修正済み） */
 const firebaseConfig = {
   apiKey:"d47572a1cd7e50746a614ef286b5375c",
   authDomain:"tetsudo-site6.firebaseapp.com",
   databaseURL:"https://tetsudo-site6-default-rtdb.firebaseio.com",
   projectId:"tetsudo-site6",
-  storageBucket:"tetsudo-site6.appspot.com", /* ← 修正ポイント */
+  storageBucket:"tetsudo-site6.appspot.com",  /* ← 修正済み */
   messagingSenderId:"563943849207",
   appId:"1:563943849207:web:1c813365201cb431d6e7f2"
 };
@@ -321,7 +314,6 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase();
 const auth = getAuth();
 
-/* ローカルデータ */
 let urls = JSON.parse(localStorage.getItem("urls") || "[]");
 let currentCategory = "all";
 let editIndex = null;
@@ -329,16 +321,17 @@ let isAuthed = false;
 
 /* ナビID変換 */
 function navIdForCategory(cat){
-  return {
-    "all":"nav-all",
-    "京王":"nav-keio",
-    "JR":"nav-jr",
-    "大手私鉄":"nav-ote",
-    "地下鉄":"nav-chika",
-    "その他":"nav-etc",
-    "資料":"nav-data",
-    "よく使う":"nav-fav"
-  }[cat] || "nav-all";
+  switch(cat){
+    case "all": return "nav-all";
+    case "京王": return "nav-keio";
+    case "JR": return "nav-jr";
+    case "大手私鉄": return "nav-ote";
+    case "地下鉄": return "nav-chika";
+    case "その他": return "nav-etc";
+    case "資料": return "nav-data";
+    case "よく使う": return "nav-fav";
+    default: return "nav-all";
+  }
 }
 
 /* 画面切り替え */
@@ -362,6 +355,7 @@ window.showSection = showSection;
 /* カテゴリ切り替え */
 function setCategory(cat){
   currentCategory = cat;
+
   showSection("urls");
 
   document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
@@ -398,7 +392,6 @@ function render(){
     div.className="item";
     div.style.borderLeftColor = categoryBorderColor(item.category);
 
-    /* カードタップでURLを開く（ボタンは除外） */
     div.addEventListener("click", (e) => {
       if (e.target.tagName.toLowerCase() === "button") return;
       window.open(item.url, "_blank");
@@ -498,6 +491,42 @@ window.removeUrl = function(i){
   cloudSave(true);
   render();
 };
+
+/* Firebase保存 */
+window.cloudSave = function(silent=false){
+  set(ref(db,"urlData"),urls).then(()=>{
+    if(!silent) alert("保存しました");
+  });
+};
+
+/* Firebase受信 */
+window.cloudLoad = function(){
+  onValue(ref(db,"urlData"),snap=>{
+    urls=snap.val()||[];
+    localStorage.setItem("urls",JSON.stringify(urls));
+    render();
+  });
+};
+
+/* 天気 */
+const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
+const lat=35.68, lon=139.76;
+
+/* 現在の天気 */
+async function loadCurrentWeather(){
+    const el=document.getElementById("weather-now");
+  try{
+    const r=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
+    const d=await r.json();
+    el.innerHTML=`
+      <div style="text-align:center;">
+        <img src="https://openweathermap.org/img/wn/${d.weather[0].icon}@4x.png" width="80">
+        <div>${d.weather[0].description}</div>
+        <div>${d.main.temp}℃</div>
+      </div>`;
+  }catch{ el.textContent="失敗"; }
+}
+
 /* 今日の天気 */
 async function loadTodayWeather(){
   const el=document.getElementById("weather-today");
@@ -577,35 +606,8 @@ if(localStorage.getItem("theme")==="light"){
   document.body.classList.add("light");
 }
 
-/* Firebase保存 */
-window.cloudSave = function(silent=false){
-  set(ref(db,"urlData"),urls).then(()=>{
-    if(!silent) alert("保存しました");
-  }).catch(err=>{
-    alert("保存エラー: " + err.message);
-  });
-};
-
-/* Firebase受信 */
-window.cloudLoad = function(){
-  onValue(ref(db,"urlData"),snap=>{
-    urls=snap.val()||[];
-    localStorage.setItem("urls",JSON.stringify(urls));
-    render();
-  }, err=>{
-    alert("受信エラー: " + err.message);
-  });
-};
-
-/* 天気API設定 */
-const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
-const lat=35.68, lon=139.76;
-
 /* 初期化 */
-signInAnonymously(auth)
-  .then(()=>cloudLoad())
-  .catch(err=>alert("Firebase認証エラー: " + err.message));
-
+signInAnonymously(auth).then(()=>cloudLoad());
 render();
 startClock();
 loadCurrentWeather();
