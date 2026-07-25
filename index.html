@@ -193,18 +193,14 @@ header {
 
 .modal {
   background:#1c1c1c;
-  padding:8px;        /* ← さらに縮小 */
+  padding:8px;
   border-radius:14px;
-  width:90%;          /* ← 画面幅に合わせる */
-  max-width:240px;    /* ← スマホでも絶対収まる */
+  width:90%;
+  max-width:240px;   /* ← 君の希望サイズを維持 */
   box-sizing:border-box;
 }
 
-.modal h3 {
-  font-size:20px;
-  margin-bottom:12px;
-}
-
+/* 入力枠を左右対称にする */
 .modal input,
 .modal textarea,
 .modal select {
@@ -527,7 +523,7 @@ window.cloudLoad = function(){
   });
 };
 
-/* 天気API（安定版） */
+/* 天気API（最高気温を表示する方式に変更） */
 const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
 const lat=35.68, lon=139.76;
 
@@ -546,24 +542,38 @@ async function loadCurrentWeather(){
   }catch{ el.textContent="失敗"; }
 }
 
-/* 今日の天気 */
+/* 今日の天気（最高気温） */
 async function loadTodayWeather(){
   const el=document.getElementById("weather-today");
   try{
     const r=await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
     const d=await r.json();
-    const t=d.list[0];
+
+    let maxTemp = -999;
+    let icon = "";
+    let desc = "";
+
+    d.list.forEach(item=>{
+      const date = item.dt_txt.split(" ")[0];
+      if(date === d.list[0].dt_txt.split(" ")[0]){
+        if(item.main.temp > maxTemp){
+          maxTemp = item.main.temp;
+          icon = item.weather[0].icon;
+          desc = item.weather[0].description;
+        }
+      }
+    });
 
     el.innerHTML=`
       <div style="text-align:center;">
-        <img src="https://openweathermap.org/img/wn/${t.weather[0].icon}@4x.png" width="80">
-        <div>${t.weather[0].description}</div>
-        <div>${t.main.temp}℃</div>
+        <img src="https://openweathermap.org/img/wn/${icon}@4x.png" width="80">
+        <div>${desc}</div>
+        <div>${maxTemp}℃</div>
       </div>`;
   }catch{ el.textContent="失敗"; }
 }
 
-/* 1週間の天気 */
+/* 1週間の天気（最高気温） */
 async function loadWeeklyWeather(){
   const el=document.getElementById("weather-week");
   try{
@@ -577,7 +587,12 @@ async function loadWeeklyWeather(){
 
     d.list.forEach(item=>{
       const date = item.dt_txt.split(" ")[0];
-      if(!days[date]) days[date] = item;
+      if(!days[date]) days[date] = { max:-999, icon:"", desc:"" };
+      if(item.main.temp > days[date].max){
+        days[date].max = item.main.temp;
+        days[date].icon = item.weather[0].icon;
+        days[date].desc = item.weather[0].description;
+      }
     });
 
     Object.keys(days).slice(0,7).forEach((date,i)=>{
@@ -588,9 +603,9 @@ async function loadWeeklyWeather(){
       box.className="weather-day";
       box.innerHTML=`
         <div>${label}</div>
-        <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}.png" width="40">
-        <div>${day.weather[0].description}</div>
-        <div>${day.main.temp}℃</div>
+        <img src="https://openweathermap.org/img/wn/${day.icon}.png" width="40">
+        <div>${day.desc}</div>
+        <div>${day.max}℃</div>
       `;
       wrap.appendChild(box);
     });
