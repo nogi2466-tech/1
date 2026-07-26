@@ -104,10 +104,23 @@ header {
   box-sizing:border-box;
 }
 
-.item-title { font-size:20px; font-weight:bold; }
-.item-url { font-size:14px; color:#ccc; }
-.item-detail { font-size:16px; margin-top:6px; }
-.item-category { font-size:14px; opacity:0.9; }
+.item-title {
+  font-size:26px;
+  font-weight:bold;
+  text-align:left;
+}
+
+.item-detail {
+  font-size:16px;
+  margin-top:10px;
+  line-height:1.6;
+}
+
+.item-category {
+  font-size:14px;
+  opacity:0.9;
+  margin-top:8px;
+}
 
 .item-buttons {
   display:flex;
@@ -429,13 +442,18 @@ function render(){
       `;
     }
 
+    /* タイトル左上・大きく、詳細は改行反映、URLは非表示 */
     div.innerHTML = `
-      <div class="item-inner">
+      <div class="item-inner" style="width:100%;">
         <div class="item-title">${item.title}</div>
-        <div class="item-url">${item.url}</div>
-        <div class="item-detail">${item.detail||""}</div>
+
+        <div class="item-detail">
+          ${(item.detail || "").replace(/\n/g, "<br>")}
+        </div>
+
         <div class="item-category">カテゴリ: ${item.category}</div>
       </div>
+
       <div class="item-buttons">${buttonsHtml}</div>
     `;
     list.appendChild(div);
