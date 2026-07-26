@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>tetsudo-site2</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
 
 <style>
 :root {
@@ -21,6 +21,29 @@ body {
   background:#0f0f0f;
   color:#eee;
   font-family:system-ui;
+  overflow-x:hidden;
+}
+
+body.light {
+  background:#f5f5f5;
+  color:#222;
+}
+body.light .card,
+body.light .item,
+body.light .modal {
+  background:#fff;
+  color:#222;
+}
+body.light .nav {
+  background:#e0e0e0;
+}
+body.light .nav button {
+  background:#ccc;
+  color:#222;
+}
+body.light .nav button.active {
+  background:#0099ff;
+  color:#fff;
 }
 
 header {
@@ -37,8 +60,8 @@ header {
   gap:10px;
   padding:14px;
   background:#1a1a1a;
-  flex-wrap:wrap;
   justify-content:center;
+  flex-wrap:wrap;
 }
 
 .nav button {
@@ -48,6 +71,7 @@ header {
   cursor:pointer;
   color:#fff;
   font-size:15px;
+  flex-shrink:1;
 }
 
 #nav-all { background:#555; }
@@ -73,13 +97,26 @@ header {
   padding:18px;
   border-radius:12px;
   margin-bottom:14px;
+  display:flex;
+  justify-content:space-between;
   border-left:6px solid #444;
+  width:100%;
+  box-sizing:border-box;
 }
 
 .item-title { font-size:20px; font-weight:bold; }
 .item-url { font-size:14px; color:#ccc; }
 .item-detail { font-size:16px; margin-top:6px; }
 .item-category { font-size:14px; opacity:0.9; }
+
+.item-buttons {
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.primary { background:#0099ff; color:#fff; border:none; padding:8px; border-radius:6px; }
+.gray { background:#444; color:#fff; border:none; padding:8px; border-radius:6px; }
+.danger { background:#c33; color:#fff; border:none; padding:8px; border-radius:6px; }
 
 .card {
   background:#1c1c1c;
@@ -92,6 +129,7 @@ header {
   display:flex;
   gap:10px;
   justify-content:center;
+  flex-wrap:wrap;
 }
 
 .circle-tab {
@@ -101,6 +139,7 @@ header {
   background:#222;
   color:#eee;
   cursor:pointer;
+  font-size:14px;
 }
 
 .circle-tab.active {
@@ -122,6 +161,51 @@ header {
   width:130px;
   text-align:center;
 }
+
+.modal-bg {
+  position:fixed;
+  inset:0;
+  background:#000a;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+
+.modal {
+  background:#1c1c1c;
+  padding:20px;
+  border-radius:14px;
+  width:90%;
+  max-width:420px;
+  box-sizing:border-box;
+}
+
+.modal input,
+.modal textarea,
+.modal select {
+  width:calc(100% - 20px);
+  margin-left:10px;
+  margin-right:10px;
+  padding:12px;
+  border-radius:8px;
+  border:none;
+  background:#2a2a2a;
+  color:#fff;
+  font-size:15px;
+  margin-bottom:12px;
+}
+
+textarea {
+  min-height:120px;
+  resize:none;
+}
+
+.modal-buttons {
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
 </style>
 </head>
 <body>
@@ -142,9 +226,11 @@ header {
 </div>
 
 <section id="section-urls" class="section active">
+
   <input id="searchInput" placeholder="タイトル検索"
          oninput="searchTitle()"
          style="width:100%; padding:10px; margin-bottom:12px; border-radius:8px; border:none; font-size:16px;">
+
   <div id="urlList"></div>
 </section>
 
@@ -170,10 +256,48 @@ header {
 
 <section id="section-settings" class="section">
   <div class="card">
+    <h3>クラウド同期</h3>
+    <button class="primary" onclick="cloudSave()">クラウド保存</button>
+    <button class="gray" onclick="cloudLoad()">クラウド受信</button>
+  </div>
+
+  <div class="card">
+    <h3>URL追加（パスワード必要）</h3>
+    <input id="passInput" type="password" placeholder="パスワードを入力">
+    <button class="primary" onclick="checkPass()">認証</button>
+    <button id="openAddBtn" class="gray" style="display:none;" onclick="openAddModal()">新規追加画面を開く</button>
+  </div>
+
+  <div class="card">
     <h3>テーマ切り替え</h3>
-    <button onclick="toggleTheme()">ライト / ダーク切り替え</button>
+    <button class="primary" onclick="toggleTheme()">ライト / ダーク切り替え</button>
   </div>
 </section>
+
+<div id="modalBg" class="modal-bg">
+  <div class="modal">
+    <h3 id="modalTitle">新規追加</h3>
+
+    <input id="formTitle" placeholder="タイトル">
+    <input id="formUrl" placeholder="URL">
+    <textarea id="formDetail" placeholder="詳細"></textarea>
+
+    <select id="formCategory">
+      <option value="京王">京王</option>
+      <option value="JR">JR</option>
+      <option value="大手私鉄">大手私鉄</option>
+      <option value="地下鉄">地下鉄</option>
+      <option value="その他">その他</option>
+      <option value="資料">資料</option>
+      <option value="よく使う">よく使う</option>
+    </select>
+
+    <div class="modal-buttons">
+      <button class="gray" onclick="closeModal()">閉じる</button>
+      <button id="modalSubmitBtn" class="primary" onclick="submitModal()">追加する</button>
+    </div>
+  </div>
+</div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
@@ -201,14 +325,25 @@ let editIndex = null;
 let isAuthed = false;
 let searchKeyword = "";
 
-/* URLを表示するカテゴリ（すべてで表示するカテゴリ） */
-const urlCategories = ["京王", "JR", "大手私鉄", "地下鉄", "その他"];
-
 /* タイトル検索 */
 window.searchTitle = function(){
   searchKeyword = document.getElementById("searchInput").value.trim();
   render();
 };
+
+/* ナビID変換 */
+function navIdForCategory(cat){
+  return {
+    "all":"nav-all",
+    "京王":"nav-keio",
+    "JR":"nav-jr",
+    "大手私鉄":"nav-ote",
+    "地下鉄":"nav-chika",
+    "その他":"nav-etc",
+    "資料":"nav-data",
+    "よく使う":"nav-fav"
+  }[cat] || "nav-all";
+}
 
 /* 画面切り替え */
 window.showSection = function(name){
@@ -233,7 +368,7 @@ window.setCategory = function(cat){
   showSection("urls");
 
   document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
-  document.getElementById("nav-" + (cat==="all"?"all":cat)).classList.add("active");
+  document.getElementById(navIdForCategory(cat)).classList.add("active");
 
   render();
 };
@@ -251,36 +386,19 @@ function categoryBorderColor(cat){
   }[cat] || "#444";
 }
 
-/* URL描画（ここが重要） */
+/* URL描画 */
 function render(){
   const list = document.getElementById("urlList");
   list.innerHTML = "";
 
   let filtered = urls;
 
-  /* すべて → 京王・JR・大手私鉄・地下鉄・その他だけ表示 */
-  if (currentCategory === "all") {
-    filtered = urls.filter(u => urlCategories.includes(u.category));
-  }
-
-  /* 資料 → 資料だけ表示 */
-  if (currentCategory === "資料") {
-    filtered = urls.filter(u => u.category === "資料");
-  }
-
-  /* よく使う → よく使うだけ表示 */
-  if (currentCategory === "よく使う") {
-    filtered = urls.filter(u => u.category === "よく使う");
-  }
-
-  /* 情報・設定 → URLは一切表示しない */
-  if (currentCategory === "情報" || currentCategory === "設定") {
-    return;
-  }
-
-  /* 通常カテゴリ（京王・JR・大手私鉄・地下鉄・その他） */
-  if (urlCategories.includes(currentCategory)) {
-    filtered = urls.filter(u => u.category === currentCategory);
+  /* カテゴリ絞り込み */
+  if(currentCategory !== "all"){
+    filtered = filtered.filter(u => u.category === currentCategory);
+  } else {
+    /* すべて → 資料を除外 */
+    filtered = filtered.filter(u => u.category !== "資料");
   }
 
   /* タイトル検索 */
@@ -341,7 +459,7 @@ window.openAddModal = function(){
   editIndex=null;
 
   document.getElementById("modalTitle").textContent="新規追加";
-  document.querySelector(".modal-buttons .primary").textContent = "追加する";
+  document.getElementById("modalSubmitBtn").textContent = "追加する";
 
   document.getElementById("formTitle").value="";
   document.getElementById("formUrl").value="";
@@ -357,7 +475,7 @@ window.openEditModal = function(i){
   const item=urls[i];
 
   document.getElementById("modalTitle").textContent="編集";
-  document.querySelector(".modal-buttons .primary").textContent = "上書き保存";
+  document.getElementById("modalSubmitBtn").textContent = "上書き保存";
 
   document.getElementById("formTitle").value=item.title;
   document.getElementById("formUrl").value=item.url;
@@ -393,7 +511,6 @@ window.submitModal = function(){
   }
 
   localStorage.setItem("urls",JSON.stringify(urls));
-  cloudSave(true);
   render();
   closeModal();
 };
@@ -401,32 +518,32 @@ window.submitModal = function(){
 /* 削除 */
 window.removeUrl = function(i){
   if(!confirm("削除しますか？")) return;
+
   urls.splice(i,1);
   localStorage.setItem("urls",JSON.stringify(urls));
-  cloudSave(true);
   render();
 };
 
-/* クラウド保存 */
-window.cloudSave = function(silent=false){
-  set(ref(db,"urlData"),urls).then(()=>{
-    if(!silent) alert("保存しました");
+/* クラウド保存（手動のみ） */
+window.cloudSave = function(){
+  set(ref(db,"urlData"), urls).then(()=>{
+    alert("クラウドに保存しました");
   });
 };
 
-/* クラウド受信 */
+/* クラウド受信（手動） */
 window.cloudLoad = async function(){
   const snapshot = await get(ref(db,"urlData"));
   urls = snapshot.val() || [];
-  localStorage.setItem("urls",JSON.stringify(urls));
+  localStorage.setItem("urls", JSON.stringify(urls));
   render();
   alert("クラウドから受信しました");
 };
 
 /* 自動同期 */
-onValue(ref(db,"urlData"),snap=>{
-  urls=snap.val()||[];
-  localStorage.setItem("urls",JSON.stringify(urls));
+onValue(ref(db,"urlData"), snap=>{
+  urls = snap.val() || [];
+  localStorage.setItem("urls", JSON.stringify(urls));
   render();
 });
 
@@ -453,15 +570,14 @@ async function loadCurrentWeather(){
 async function loadTodayWeather(){
   const el=document.getElementById("weather-today");
   try{
-    const r=await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
+    const r=await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
     const d=await r.json();
-    const t=d.daily[0];
+    const t=d.list[0];
     el.innerHTML=`
       <div style="text-align:center;">
         <img src="https://openweathermap.org/img/wn/${t.weather[0].icon}@4x.png" width="80">
         <div>${t.weather[0].description}</div>
-        <div>${t.temp.max}℃ / ${t.temp.min}℃</div>
-        <div>降水確率 ${Math.round(t.pop*100)}%</div>
+        <div>${t.main.temp}℃</div>
       </div>`;
   }catch{ el.textContent="失敗"; }
 }
@@ -470,16 +586,16 @@ async function loadTodayWeather(){
 async function loadWeeklyWeather(){
   const el=document.getElementById("weather-week");
   try{
-    const r=await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
+    const r=await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
     const d=await r.json();
-    const days=d.daily.slice(0,7);
 
     const wrap=document.createElement("div");
     wrap.className="weather-week";
 
-    days.forEach((day,i)=>{
+    for(let i=0;i<7;i++){
+      const day=d.list[i];
       const dt=new Date(day.dt*1000);
-      const label=i===0?"今日":`${dt.getMonth()+1}/${dt.getDate()}`;
+      const label=`${dt.getMonth()+1}/${dt.getDate()}`;
 
       const box=document.createElement("div");
       box.className="weather-day";
@@ -487,10 +603,10 @@ async function loadWeeklyWeather(){
         <div>${label}</div>
         <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}.png" width="40">
         <div>${day.weather[0].description}</div>
-        <div>${day.temp.max}℃ / ${day.temp.min}℃</div>
+        <div>${day.main.temp}℃</div>
       `;
       wrap.appendChild(box);
-    });
+    }
 
     el.innerHTML="";
     el.appendChild(wrap);
