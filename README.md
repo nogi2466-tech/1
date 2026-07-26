@@ -392,12 +392,15 @@ let calendarEvents = [];
 window.openMode = function(mode){
   currentMode = mode;
   document.getElementById("startup").style.display = "none";
+
   if(mode === "urls"){
     document.getElementById("urlsMode").style.display = "block";
+    render();   // ← ここで初めて呼ぶ
   }else{
     document.getElementById("noticeMode").style.display = "block";
   }
 };
+
 
 /* お知らせモード内タブ */
 window.setNoticeSection = function(name){
@@ -874,7 +877,9 @@ async function loadFiles(){
 async function init(){
   await signInAnonymously(auth);
   await cloudLoad();
-  render();
+
+  // render() は絶対にここで呼ばない
+
   startClock();
   loadCurrentWeather();
   loadTodayWeather();
@@ -883,6 +888,7 @@ async function init(){
   loadTodayNotice();
   loadFiles();
 }
+
 
 init();
 </script>
