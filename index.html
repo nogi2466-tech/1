@@ -1,1012 +1,770 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>tetsudo-site2</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta charset="UTF-8">
+  <title>鉄道サイト</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-:root {
-  --color-keio:#8e44ad;
-  --color-jr:#27ae60;
-  --color-ote:#e74c3c;
-  --color-chika:#2980b9;
-  --color-etc:#7f8c8d;
-  --color-data:#f1c40f;
-  --color-fav:#ff8800;
-}
+  <style>
+    :root {
+      --bg-light: #f5f5f5;
+      --bg-dark: #121212;
+      --card-light: #ffffff;
+      --card-dark: #1e1e1e;
+      --text-light: #222222;
+      --text-dark: #f5f5f5;
+      --accent: #1976d2;
+      --accent-soft: #bbdefb;
+      --border-soft: #cccccc;
+    }
 
-body {
-  margin:0;
-  background:#0f0f0f;
-  color:#eee;
-  font-family:system-ui;
-  overflow-x:hidden;
-}
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
 
-body.light {
-  background:#f5f5f5;
-  color:#222;
-}
-body.light .card,
-body.light .item,
-body.light .modal {
-  background:#fff;
-  color:#222;
-}
-body.light .nav {
-  background:#e0e0e0;
-}
-body.light .nav button {
-  background:#ccc;
-  color:#222;
-}
-body.light .nav button.active {
-  background:#0099ff;
-  color:#fff;
-}
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: #1976d2;
+      color: #fff;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+    }
+    header .mode-toggle {
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.15);
+      font-size: 13px;
+    }
 
-header {
-  background:#0066cc;
-  padding:14px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
-  color:#fff;
-}
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
 
-/* 起動画面 */
-#startup {
-  padding:24px;
-  text-align:center;
-}
-.startup-title {
-  font-size:20px;
-  margin-bottom:20px;
-}
-.startup-buttons {
-  display:flex;
-  justify-content:center;
-  gap:16px;
-  flex-wrap:wrap;
-}
-.startup-buttons button {
-  padding:12px 24px;
-  border:none;
-  border-radius:10px;
-  font-size:16px;
-  cursor:pointer;
-  background:#0099ff;
-  color:#fff;
-}
+    .card {
+      background: var(--card-light);
+      border-radius: 8px;
+      padding: 12px 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      margin-bottom: 12px;
+    }
+    body.dark .card {
+      background: var(--card-dark);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    }
+    .card h2, .card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
 
-.nav {
-  display:flex;
-  gap:10px;
-  padding:14px;
-  background:#1a1a1a;
-  justify-content:center;
-  flex-wrap:wrap;
-}
+    .section-title {
+      font-size: 18px;
+      margin-bottom: 8px;
+      border-left: 4px solid var(--accent);
+      padding-left: 8px;
+    }
 
-.nav button {
-  padding:10px 18px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  color:#fff;
-  font-size:15px;
-  flex-shrink:1;
-}
+    button {
+      border: none;
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    button.gray {
+      background: #888;
+      color: #fff;
+    }
+    button.outline {
+      background: transparent;
+      border: 1px solid var(--border-soft);
+      color: inherit;
+    }
 
-#nav-all { background:#555; }
-#nav-keio { background:var(--color-keio); }
-#nav-jr { background:var(--color-jr); }
-#nav-ote { background:var(--color-ote); }
-#nav-chika { background:var(--color-chika); }
-#nav-etc { background:var(--color-etc); }
-#nav-data { background:var(--color-data); color:#000; }
-#nav-fav { background:var(--color-fav); }
-#nav-info { background:#0099ff; }
-#nav-settings { background:#444; }
+    /* URL 一覧 */
+    .url-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .url-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.03);
+    }
+    body.dark .url-item {
+      background: rgba(255,255,255,0.06);
+    }
+    .url-item-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .url-item-link {
+      font-size: 12px;
+      opacity: 0.8;
+    }
 
-.nav button.active {
-  outline:3px solid #fff;
-}
+    /* お知らせ＋カレンダー */
+    .notice-text {
+      font-size: 13px;
+      line-height: 1.6;
+    }
 
-.section { display:none; padding:16px; }
-.section.active { display:block; }
+    .calendar-container {
+      margin-top: 8px;
+    }
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .calendar-month-label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      font-size: 12px;
+    }
+    .calendar-cell {
+      min-height: 26px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .calendar-cell-header {
+      font-weight: 600;
+      opacity: 0.8;
+    }
+    .calendar-cell-day {
+      cursor: pointer;
+      background: rgba(0,0,0,0.03);
+    }
+    body.dark .calendar-cell-day {
+      background: rgba(255,255,255,0.06);
+    }
+    .calendar-cell-today-light {
+      background: #ffecb3;
+      border: 1px solid #ffb300;
+    }
+    .calendar-cell-today-dark {
+      background: #ffb300;
+      color: #000;
+    }
+    .calendar-cell-has-event {
+      box-shadow: inset 0 0 0 2px var(--accent-soft);
+    }
 
-.item {
-  background:#1c1c1c;
-  padding:18px;
-  border-radius:12px;
-  margin-bottom:14px;
-  display:flex;
-  justify-content:space-between;
-  border-left:6px solid #444;
-  width:100%;
-  box-sizing:border-box;
-}
+    .day-events {
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
 
-.item-title {
-  font-size:26px;
-  font-weight:bold;
-  text-align:left;
-}
+    /* ファイル一覧 */
+    .file-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+    }
+    .file-card {
+      border-radius: 8px;
+      padding: 8px;
+      background: rgba(0,0,0,0.03);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    body.dark .file-card {
+      background: rgba(255,255,255,0.06);
+    }
+    .file-thumb {
+      height: 70px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      background: #e0e0e0;
+      color: #333;
+    }
+    body.dark .file-thumb {
+      background: #333;
+      color: #f5f5f5;
+    }
+    .file-title {
+      font-size: 12px;
+      font-weight: 600;
+      word-break: break-all;
+    }
 
-.item-detail {
-  font-size:16px;
-  margin-top:10px;
-  line-height:1.6;
-}
+    /* モーダル */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal {
+      width: 90%;
+      max-width: 420px;
+      background: var(--card-light);
+      border-radius: 8px;
+      padding: 12px 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    body.dark .modal {
+      background: var(--card-dark);
+    }
+    .modal h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+    .modal input[type="text"],
+    .modal input[type="url"],
+    .modal input[type="file"] {
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-soft);
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 4px;
+    }
 
-.item-category {
-  font-size:14px;
-  opacity:0.9;
-  margin-top:8px;
-}
-
-.item-buttons {
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-}
-.primary { background:#0099ff; color:#fff; border:none; padding:8px; border-radius:6px; }
-.gray { background:#444; color:#fff; border:none; padding:8px; border-radius:6px; }
-.danger { background:#c33; color:#fff; border:none; padding:8px; border-radius:6px; }
-
-.card {
-  background:#1c1c1c;
-  padding:16px;
-  border-radius:12px;
-  margin-bottom:16px;
-}
-
-.circle-tabs {
-  display:flex;
-  gap:10px;
-  justify-content:center;
-  flex-wrap:wrap;
-}
-
-.circle-tab {
-  border-radius:999px;
-  padding:8px 18px;
-  border:1px solid #555;
-  background:#222;
-  color:#eee;
-  cursor:pointer;
-  font-size:14px;
-}
-
-.circle-tab.active {
-  background:#0099ff;
-  border-color:#0099ff;
-}
-
-.weather-week {
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  justify-content:center;
-}
-
-.weather-day {
-  background:#222;
-  padding:10px;
-  border-radius:8px;
-  width:130px;
-  text-align:center;
-}
-
-.modal-bg {
-  position:fixed;
-  inset:0;
-  background:#000a;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:1000;
-}
-
-.modal {
-  background:#1c1c1c;
-  padding:20px;
-  border-radius:14px;
-  width:90%;
-  max-width:420px;
-  box-sizing:border-box;
-}
-
-.modal input,
-.modal textarea,
-.modal select {
-  width:calc(100% - 20px);
-  margin-left:10px;
-  margin-right:10px;
-  padding:12px;
-  border-radius:8px;
-  border:none;
-  background:#2a2a2a;
-  color:#fff;
-  font-size:15px;
-  margin-bottom:12px;
-}
-
-textarea {
-  min-height:120px;
-  resize:none;
-}
-
-.modal-buttons {
-  display:flex;
-  justify-content:flex-end;
-  gap:10px;
-}
-
-/* お知らせモード用 */
-#notice-nav {
-  display:flex;
-  gap:10px;
-  padding:14px;
-  background:#1a1a1a;
-  justify-content:center;
-  flex-wrap:wrap;
-}
-#notice-nav button {
-  padding:10px 18px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  color:#fff;
-  font-size:15px;
-}
-#notice-nav button.active {
-  outline:3px solid #fff;
-}
-#notice-nav-notice { background:#0099ff; }
-#notice-nav-calendar { background:#27ae60; }
-#notice-nav-files { background:#8e44ad; }
-
-/* カレンダー */
-.calendar {
-  max-width:420px;
-  margin:0 auto;
-}
-.calendar-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:10px;
-}
-.calendar-grid {
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:4px;
-}
-.calendar-cell {
-  padding:8px;
-  border-radius:6px;
-  text-align:center;
-  font-size:14px;
-}
-.calendar-cell-header {
-  font-weight:bold;
-}
-.calendar-cell-day {
-  cursor:pointer;
-}
-.calendar-cell-today-light {
-  background:#ffeb3b;
-  color:#000;
-}
-.calendar-cell-today-dark {
-  background:#ff9800;
-  color:#fff;
-}
-.calendar-cell-has-event::after {
-  content:"●";
-  display:block;
-  font-size:10px;
-  margin-top:2px;
-}
-
-/* ファイル */
-.file-list {
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.file-card {
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:10px;
-  border-radius:10px;
-  background:#1c1c1c;
-}
-.file-thumb {
-  width:48px;
-  height:48px;
-  border-radius:6px;
-  background:#333;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:12px;
-}
-body.light .file-card { background:#fff; }
-body.light .file-thumb { background:#ddd; }
-</style>
+    /* 設定 */
+    .settings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+  </style>
 </head>
-<body>
+<body class="light">
+  <header>
+    <h1>鉄道サイト</h1>
+    <div class="mode-toggle" onclick="toggleTheme()">ライト / ダーク切替</div>
+  </header>
 
-<header>tetsudo-site2</header>
-
-<!-- 起動画面 -->
-<div id="startup">
-  <div class="startup-title">どちらを開きますか？</div>
-  <div class="startup-buttons">
-    <button onclick="openMode('urls')">URL一覧</button>
-    <button onclick="openMode('notice')">お知らせ</button>
-  </div>
-</div>
-
-<!-- URL一覧モード -->
-<div id="urlsMode" style="display:none;">
-  <div class="nav">
-    <button id="nav-all" class="active" onclick="setCategory('all')">すべて</button>
-    <button id="nav-keio" onclick="setCategory('京王')">京王</button>
-    <button id="nav-jr" onclick="setCategory('JR')">JR</button>
-    <button id="nav-ote" onclick="setCategory('大手私鉄')">大手私鉄</button>
-    <button id="nav-chika" onclick="setCategory('地下鉄')">地下鉄</button>
-    <button id="nav-etc" onclick="setCategory('その他')">その他</button>
-    <button id="nav-data" onclick="setCategory('資料')">資料</button>
-    <button id="nav-fav" onclick="setCategory('よく使う')">よく使う</button>
-    <button id="nav-info" onclick="showSection('info')">情報</button>
-    <button id="nav-settings" onclick="showSection('settings')">設定</button>
-  </div>
-
-  <section id="section-urls" class="section active">
-    <input id="searchInput" placeholder="タイトル検索"
-           oninput="searchTitle()"
-           style="width:100%; padding:10px; margin-bottom:12px; border-radius:8px; border:none; font-size:16px;">
-    <div id="urlList"></div>
-  </section>
-
-  <section id="section-info" class="section">
-    <div class="card">
-      <h3>天気情報（東京）</h3>
-      <div class="circle-tabs">
-        <button class="circle-tab active" data-tab="now" onclick="switchWeatherTab('now')">現在</button>
-        <button class="circle-tab" data-tab="today" onclick="switchWeatherTab('today')">今日</button>
-        <button class="circle-tab" data-tab="week" onclick="switchWeatherTab('week')">1週間</button>
-      </div>
-
-      <div id="weather-now">読み込み中...</div>
-      <div id="weather-today" style="display:none;">読み込み中...</div>
-      <div id="weather-week" style="display:none;">読み込み中...</div>
-    </div>
-
-    <div class="card">
-      <h3>現在時刻</h3>
-      <div id="datetime">読み込み中...</div>
-    </div>
-  </section>
-
-  <section id="section-settings" class="section">
-    <div class="card">
-      <h3>クラウド同期</h3>
-      <button class="primary" onclick="cloudSave()">クラウド保存</button>
-      <button class="gray" onclick="cloudLoad()">クラウド受信</button>
-    </div>
-
-    <div class="card">
-      <h3>URL追加（パスワード必要）</h3>
-      <input id="passInput" type="password" placeholder="パスワードを入力">
-      <button class="primary" onclick="checkPass()">認証</button>
-      <button id="openAddBtn" class="gray" style="display:none;" onclick="openAddModal()">新規追加画面を開く</button>
-    </div>
-
-    <div class="card">
-      <h3>テーマ切り替え</h3>
-      <button class="primary" onclick="toggleTheme()">ライト / ダーク切り替え</button>
-    </div>
-  </section>
-</div>
-
-<!-- お知らせモード -->
-<div id="noticeMode" style="display:none;">
-  <div id="notice-nav">
-    <button id="notice-nav-notice" class="active" onclick="setNoticeSection('notice')">お知らせ</button>
-    <button id="notice-nav-calendar" onclick="setNoticeSection('calendar')">カレンダー</button>
-    <button id="notice-nav-files" onclick="setNoticeSection('files')">ファイル</button>
-  </div>
-
-  <!-- お知らせ -->
-  <section id="notice-section-notice" class="section active">
-    <div class="card">
-      <h3>今日のお知らせ</h3>
-      <div id="todayNotice">読み込み中...</div>
-    </div>
-  </section>
-
-  <!-- カレンダー -->
-  <section id="notice-section-calendar" class="section">
-    <div class="card">
-      <h3>カレンダー</h3>
-      <div class="calendar">
-        <div class="calendar-header">
-          <button class="gray" onclick="prevMonth()">＜</button>
-          <div id="calendar-month-label"></div>
-          <button class="gray" onclick="nextMonth()">＞</button>
+  <main>
+    <section>
+      <div class="section-title">URL一覧</div>
+      <div class="card">
+        <div style="margin-bottom:8px;">
+          <button class="primary" onclick="openUrlModal()">URL追加</button>
+          <button class="outline" onclick="cloudSaveUrls()">クラウド保存</button>
+          <button class="outline" onclick="cloudLoadUrls()">クラウド受信</button>
         </div>
-        <div class="calendar-grid" id="calendar-grid"></div>
+        <div id="urlList" class="url-list"></div>
+      </div>
+
+      <div class="section-title">お知らせ</div>
+      <div class="card">
+        <h3>今日のお知らせ</h3>
+        <div id="todayNotice" class="notice-text"></div>
+      </div>
+
+      <div class="card">
+        <h3>カレンダー</h3>
+        <div class="calendar-container">
+          <div class="calendar-header">
+            <button class="outline" onclick="prevMonth()">&lt;</button>
+            <div id="calendar-month-label" class="calendar-month-label"></div>
+            <button class="outline" onclick="nextMonth()">&gt;</button>
+          </div>
+          <div id="calendar-grid" class="calendar-grid"></div>
+          <div id="selectedDayEvents" class="day-events"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">ファイル</div>
+      <div class="card">
+        <div style="margin-bottom:8px;">
+          <button class="primary" onclick="openFileModal()">ファイル追加</button>
+          <button class="outline" onclick="saveFilesCloud()">クラウド保存</button>
+          <button class="outline" onclick="loadFilesCloud()">クラウド受信</button>
+        </div>
+        <div id="fileList" class="file-list"></div>
+      </div>
+
+      <div class="section-title">設定</div>
+      <div class="card">
+        <div class="settings-list">
+          <div>
+            <h3>Googleアカウント連携</h3>
+            <button class="primary" onclick="googleLogin()">Googleでログイン</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- URL追加モーダル -->
+  <div id="urlModalBg" class="modal-bg">
+    <div class="modal">
+      <h3>URL追加</h3>
+      <input id="urlFormTitle" type="text" placeholder="タイトル">
+      <input id="urlFormInput" type="url" placeholder="https://...">
+      <div class="modal-buttons">
+        <button class="gray" onclick="closeUrlModal()">閉じる</button>
+        <button class="primary" onclick="submitUrlModal()">追加する</button>
       </div>
     </div>
-    <div class="card">
-      <h3>選択した日の予定</h3>
-      <div id="selectedDayEvents">日付を選択してください</div>
-    </div>
-  </section>
+  </div>
 
-  <!-- ファイル -->
-  <section id="notice-section-files" class="section">
-    <div class="card">
+  <!-- ファイル追加モーダル -->
+  <div id="fileModalBg" class="modal-bg">
+    <div class="modal">
       <h3>ファイル追加</h3>
-      <input id="fileTitle" placeholder="タイトル">
-      <input id="fileInput" type="file">
-      <button class="primary" onclick="uploadFile()">追加</button>
-    </div>
-
-    <div class="card">
-      <h3>ファイル一覧</h3>
-      <div id="fileList" class="file-list"></div>
-    </div>
-  </section>
-</div>
-
-<div id="modalBg" class="modal-bg">
-  <div class="modal">
-    <h3 id="modalTitle">新規追加</h3>
-
-    <input id="formTitle" placeholder="タイトル">
-    <input id="formUrl" placeholder="URL">
-    <textarea id="formDetail" placeholder="詳細"></textarea>
-
-    <select id="formCategory">
-      <option value="京王">京王</option>
-      <option value="JR">JR</option>
-      <option value="大手私鉄">大手私鉄</option>
-      <option value="地下鉄">地下鉄</option>
-      <option value="その他">その他</option>
-      <option value="資料">資料</option>
-      <option value="よく使う">よく使う</option>
-    </select>
-
-    <div class="modal-buttons">
-      <button class="gray" onclick="closeModal()">閉じる</button>
-      <button id="modalSubmitBtn" class="primary" onclick="submitModal()">追加する</button>
+      <input id="fileFormTitle" type="text" placeholder="タイトル">
+      <input id="fileFormInput" type="file">
+      <div class="modal-buttons">
+        <button class="gray" onclick="closeFileModal()">閉じる</button>
+        <button class="primary" onclick="submitFileModal()">追加する</button>
+      </div>
     </div>
   </div>
-</div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { 
+      getDatabase, ref, set, get 
+    } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+    import { 
+      getAuth, signInAnonymously,
+      GoogleAuthProvider, signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+    import {
+      getStorage, ref as sRef,
+      uploadBytes, getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-import { getStorage, ref as sRef, uploadBytes, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
+    // ★ここに自分の Firebase 設定を書いてね
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
 
-/* Firebase設定 */
-const firebaseConfig = {
-  apiKey:"d47572a1cd7e50746a614ef286b5375c",
-  authDomain:"tetsudo-site6.firebaseapp.com",
-  databaseURL:"https://tetsudo-site6-default-rtdb.firebaseio.com",
-  projectId:"tetsudo-site6",
-  storageBucket:"tetsudo-site6.appspot.com",
-  messagingSenderId:"563943849207",
-  appId:"1:563943849207:web:1c813365201cb431d6e7f2"
-};
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+    const storage = getStorage(app);
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase();
-const auth = getAuth();
-const storage = getStorage();
+    let googleAccessToken = null;
+    let calendarEvents = [];
+    let calendarYear = (new Date()).getFullYear();
+    let calendarMonth = (new Date()).getMonth();
 
-/* ローカルデータ */
-let urls = JSON.parse(localStorage.getItem("urls") || "[]");
-let currentCategory = "all";
-let editIndex = null;
-let isAuthed = false;
-let searchKeyword = "";
-let currentMode = null;
+    // テーマ切替
+    window.toggleTheme = function(){
+      const body = document.body;
+      if(body.classList.contains("dark")){
+        body.classList.remove("dark");
+        body.classList.add("light");
+      }else{
+        body.classList.remove("light");
+        body.classList.add("dark");
+      }
+      drawCalendar();
+    };
 
-/* 起動画面 */
-window.openMode = function(mode){
-  currentMode = mode;
-  document.getElementById("startup").style.display = "none";
-  if(mode === "urls"){
-    document.getElementById("urlsMode").style.display = "block";
-  }else{
-    document.getElementById("noticeMode").style.display = "block";
-  }
-};
+    // URL モーダル
+    window.openUrlModal = function(){
+      document.getElementById("urlFormTitle").value = "";
+      document.getElementById("urlFormInput").value = "";
+      document.getElementById("urlModalBg").style.display = "flex";
+    };
+    window.closeUrlModal = function(){
+      document.getElementById("urlModalBg").style.display = "none";
+    };
 
-/* お知らせモード内タブ */
-window.setNoticeSection = function(name){
-  ["notice","calendar","files"].forEach(id=>{
-    document.getElementById("notice-section-"+id).classList.remove("active");
-    document.getElementById("notice-section-"+id).style.display = "none";
-    document.getElementById("notice-nav-"+id).classList.remove("active");
-  });
-  document.getElementById("notice-section-"+name).classList.add("active");
-  document.getElementById("notice-section-"+name).style.display = "block";
-  document.getElementById("notice-nav-"+name).classList.add("active");
-};
+    window.submitUrlModal = async function(){
+      const title = document.getElementById("urlFormTitle").value.trim();
+      const url = document.getElementById("urlFormInput").value.trim();
+      if(!title || !url){
+        alert("タイトルとURLは必須です");
+        return;
+      }
+      const listRef = ref(db, "urls");
+      const snapshot = await get(listRef);
+      const urls = snapshot.val() || [];
+      urls.push({ title, url });
+      await set(listRef, urls);
+      closeUrlModal();
+      loadUrls();
+    };
 
-/* タイトル検索 */
-window.searchTitle = function(){
-  searchKeyword = document.getElementById("searchInput").value.trim();
-  render();
-};
+    async function loadUrls(){
+      const el = document.getElementById("urlList");
+      if(!el) return;
+      el.innerHTML = "";
+      const snapshot = await get(ref(db, "urls"));
+      const urls = snapshot.val() || [];
+      urls.forEach(item=>{
+        const row = document.createElement("div");
+        row.className = "url-item";
 
-/* ナビID変換 */
-function navIdForCategory(cat){
-  return {
-    "all":"nav-all",
-    "京王":"nav-keio",
-    "JR":"nav-jr",
-    "大手私鉄":"nav-ote",
-    "地下鉄":"nav-chika",
-    "その他":"nav-etc",
-    "資料":"nav-data",
-    "よく使う":"nav-fav"
-  }[cat] || "nav-all";
-}
+        const left = document.createElement("div");
+        const t = document.createElement("div");
+        t.className = "url-item-title";
+        t.textContent = item.title;
+        const l = document.createElement("div");
+        l.className = "url-item-link";
+        l.textContent = item.url;
+        left.appendChild(t);
+        left.appendChild(l);
 
-/* 画面切り替え（URLモード） */
-window.showSection = function(name){
-  document.querySelectorAll("#urlsMode .section").forEach(s=>s.classList.remove("active"));
-  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+        const btn = document.createElement("button");
+        btn.className = "outline";
+        btn.textContent = "開く";
+        btn.onclick = ()=>window.open(item.url, "_blank");
 
-  if(name==="info"){
-    document.getElementById("section-info").classList.add("active");
-    document.getElementById("nav-info").classList.add("active");
-  }else if(name==="settings"){
-    document.getElementById("section-settings").classList.add("active");
-    document.getElementById("nav-settings").classList.add("active");
-  }else{
-    document.getElementById("section-urls").classList.add("active");
-    document.getElementById("nav-all").classList.add("active");
-  }
-};
-
-/* カテゴリ切り替え */
-window.setCategory = function(cat){
-  currentCategory = cat;
-  showSection("urls");
-
-  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
-  document.getElementById(navIdForCategory(cat)).classList.add("active");
-
-  render();
-};
-
-/* カード色 */
-function categoryBorderColor(cat){
-  return {
-    "京王":"var(--color-keio)",
-    "JR":"var(--color-jr)",
-    "大手私鉄":"var(--color-ote)",
-    "地下鉄":"var(--color-chika)",
-    "その他":"var(--color-etc)",
-    "資料":"var(--color-data)",
-    "よく使う":"var(--color-fav)"
-  }[cat] || "#444";
-}
-
-/* URL描画 */
-function render(){
-  const list = document.getElementById("urlList");
-  list.innerHTML = "";
-
-  let filtered = urls;
-
-  if(currentCategory !== "all"){
-    filtered = filtered.filter(u => u.category === currentCategory);
-  } else {
-    filtered = filtered.filter(u => u.category !== "資料");
-  }
-
-  if(searchKeyword !== ""){
-    filtered = filtered.filter(u => u.title.includes(searchKeyword));
-  }
-
-  filtered.sort((a,b)=>a.title.localeCompare(b.title,"ja"));
-
-  filtered.forEach((item)=>{
-    const realIndex = urls.indexOf(item);
-
-    const div = document.createElement("div");
-    div.className="item";
-    div.style.borderLeftColor = categoryBorderColor(item.category);
-
-    div.addEventListener("click", (e) => {
-      if (e.target.tagName.toLowerCase() === "button") return;
-      window.open(item.url, "_blank");
-    });
-
-    let buttonsHtml = "";
-    if(isAuthed){
-      buttonsHtml = `
-        <button class="gray" onclick="openEditModal(${realIndex})">編集</button>
-        <button class="danger" onclick="removeUrl(${realIndex})">削除</button>
-      `;
+        row.appendChild(left);
+        row.appendChild(btn);
+        el.appendChild(row);
+      });
     }
 
-    div.innerHTML = `
-      <div class="item-inner" style="width:100%;">
-        <div class="item-title">${item.title}</div>
-        <div class="item-detail">
-          ${(item.detail || "").replace(/\n/g, "<br>")}
-        </div>
-        <div class="item-category">カテゴリ: ${item.category}</div>
-      </div>
-      <div class="item-buttons">${buttonsHtml}</div>
-    `;
-    list.appendChild(div);
-  });
-}
+    // URL クラウド保存・受信
+    window.cloudSaveUrls = async function(){
+      const snapshot = await get(ref(db, "urls"));
+      const urls = snapshot.val() || [];
+      await set(ref(db, "urlsBackup"), urls);
+      alert("URL一覧をクラウドに保存しました");
+    };
+    window.cloudLoadUrls = async function(){
+      const snapshot = await get(ref(db, "urlsBackup"));
+      const urls = snapshot.val() || [];
+      await set(ref(db, "urls"), urls);
+      await loadUrls();
+      alert("クラウドからURL一覧を受信しました");
+    };
 
-/* パスワード認証 */
-window.checkPass = function(){
-  if(document.getElementById("passInput").value==="0829"){
-    isAuthed = true;
-    document.getElementById("openAddBtn").style.display="inline-block";
-    alert("認証成功");
-    render();
-  }else{
-    alert("違います");
-  }
-};
+    // ファイルモーダル
+    window.openFileModal = function(){
+      document.getElementById("fileFormTitle").value = "";
+      document.getElementById("fileFormInput").value = "";
+      document.getElementById("fileModalBg").style.display = "flex";
+    };
+    window.closeFileModal = function(){
+      document.getElementById("fileModalBg").style.display = "none";
+    };
 
-/* モーダル（追加） */
-window.openAddModal = function(){
-  editIndex=null;
+    window.submitFileModal = async function(){
+      const title = document.getElementById("fileFormTitle").value.trim();
+      const fileInput = document.getElementById("fileFormInput");
+      if(!title || !fileInput.files[0]){
+        alert("タイトルとファイルは必須です");
+        return;
+      }
+      const file = fileInput.files[0];
+      const path = `files/${Date.now()}_${file.name}`;
+      const refFile = sRef(storage, path);
 
-  document.getElementById("modalTitle").textContent="新規追加";
-  document.getElementById("modalSubmitBtn").textContent = "追加する";
+      await uploadBytes(refFile, file);
+      const url = await getDownloadURL(refFile);
 
-  document.getElementById("formTitle").value="";
-  document.getElementById("formUrl").value="";
-  document.getElementById("formDetail").value="";
-  document.getElementById("formCategory").value="京王";
+      const listRef = ref(db, "files");
+      const snapshot = await get(listRef);
+      const files = snapshot.val() || [];
+      files.push({
+        title,
+        url,
+        name: file.name,
+        type: file.type
+      });
+      await set(listRef, files);
 
-  document.getElementById("modalBg").style.display="flex";
-};
+      closeFileModal();
+      loadFiles();
+    };
 
-/* モーダル（編集） */
-window.openEditModal = function(i){
-  editIndex=i;
-  const item=urls[i];
+    async function loadFiles(){
+      const el = document.getElementById("fileList");
+      if(!el) return;
+      el.innerHTML = "";
 
-  document.getElementById("modalTitle").textContent="編集";
-  document.getElementById("modalSubmitBtn").textContent = "上書き保存";
+      const snapshot = await get(ref(db, "files"));
+      const files = snapshot.val() || [];
 
-  document.getElementById("formTitle").value=item.title;
-  document.getElementById("formUrl").value=item.url;
-  document.getElementById("formDetail").value=item.detail;
-  document.getElementById("formCategory").value=item.category;
+      files.forEach(f=>{
+        const card = document.createElement("div");
+        card.className = "file-card";
 
-  document.getElementById("modalBg").style.display="flex";
-};
+        const thumb = document.createElement("div");
+        thumb.className = "file-thumb";
 
-/* モーダル閉じる */
-window.closeModal = function(){
-  document.getElementById("modalBg").style.display="none";
-};
+        let label = "FILE";
+        if(f.type && f.type.startsWith("image/")) label = "IMG";
+        else if(f.type === "application/pdf") label = "PDF";
+        else if(f.type && f.type.startsWith("video/")) label = "VID";
 
-/* モーダル送信 */
-window.submitModal = function(){
-  const title=document.getElementById("formTitle").value.trim();
-  const url=document.getElementById("formUrl").value.trim();
-  const detail=document.getElementById("formDetail").value.trim();
-  const category=document.getElementById("formCategory").value;
+        thumb.textContent = label;
 
-  if(!title || !url){
-    alert("タイトルとURLは必須です");
-    return;
-  }
+        const title = document.createElement("div");
+        title.className = "file-title";
+        title.textContent = f.title;
 
-  const data={title,url,detail,category};
+        card.appendChild(thumb);
+        card.appendChild(title);
+        card.onclick = ()=>window.open(f.url, "_blank");
 
-  if(editIndex===null){
-    urls.push(data);
-  }else{
-    urls[editIndex]=data;
-  }
-
-  localStorage.setItem("urls",JSON.stringify(urls));
-  render();
-  closeModal();
-};
-
-/* 削除 */
-window.removeUrl = function(i){
-  if(!confirm("削除しますか？")) return;
-
-  urls.splice(i,1);
-  localStorage.setItem("urls",JSON.stringify(urls));
-  render();
-};
-
-/* クラウド保存 */
-window.cloudSave = function(){
-  set(ref(db,"urlData"), urls).then(()=>{
-    alert("クラウドに保存しました");
-  });
-};
-
-/* クラウド受信 */
-window.cloudLoad = async function(){
-  const snapshot = await get(ref(db,"urlData"));
-  urls = snapshot.val() || [];
-  localStorage.setItem("urls", JSON.stringify(urls));
-  render();
-  alert("クラウドから受信しました");
-};
-
-/* 自動同期 */
-onValue(ref(db,"urlData"), snap=>{
-  urls = snap.val() || [];
-  localStorage.setItem("urls", JSON.stringify(urls));
-  render();
-});
-
-/* 天気API */
-const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
-const lat=35.68, lon=139.76;
-
-async function loadCurrentWeather(){
-  const el=document.getElementById("weather-now");
-  try{
-    const r=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
-    const d=await r.json();
-    el.innerHTML=`
-      <div style="text-align:center;">
-        <img src="https://openweathermap.org/img/wn/${d.weather[0].icon}@4x.png" width="80">
-        <div>${d.weather[0].description}</div>
-        <div>${d.main.temp}℃</div>
-      </div>`;
-  }catch{ el.textContent="失敗"; }
-}
-
-async function loadTodayWeather(){
-  const el=document.getElementById("weather-today");
-  try{
-    const r=await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
-    const d=await r.json();
-    const t=d.list[0];
-    el.innerHTML=`
-      <div style="text-align:center;">
-        <img src="https://openweathermap.org/img/wn/${t.weather[0].icon}@4x.png" width="80">
-        <div>${t.weather[0].description}</div>
-        <div>${t.main.temp}℃</div>
-      </div>`;
-  }catch{ el.textContent="失敗"; }
-}
-
-async function loadWeeklyWeather(){
-  const el=document.getElementById("weather-week");
-  try{
-    const r=await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
-    const d=await r.json();
-
-    const wrap=document.createElement("div");
-    wrap.className="weather-week";
-
-    for(let i=0;i<7;i++){
-      const day=d.list[i];
-      const dt=new Date(day.dt*1000);
-      const label=`${dt.getMonth()+1}/${dt.getDate()}`;
-
-      const box=document.createElement("div");
-      box.className="weather-day";
-      box.innerHTML=`
-        <div>${label}</div>
-        <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}.png" width="40">
-        <div>${day.weather[0].description}</div>
-        <div>${day.main.temp}℃</div>
-      `;
-      wrap.appendChild(box);
+        el.appendChild(card);
+      });
     }
 
-    el.innerHTML="";
-    el.appendChild(wrap);
-  }catch{ el.textContent="失敗"; }
-}
+    // ファイル クラウド保存・受信
+    window.saveFilesCloud = async function(){
+      const snapshot = await get(ref(db, "files"));
+      const files = snapshot.val() || [];
+      await set(ref(db, "filesBackup"), files);
+      alert("ファイル一覧をクラウドに保存しました");
+    };
+    window.loadFilesCloud = async function(){
+      const snapshot = await get(ref(db, "filesBackup"));
+      const files = snapshot.val() || [];
+      await set(ref(db, "files"), files);
+      await loadFiles();
+      alert("クラウドからファイル一覧を受信しました");
+    };
+    // Googleログイン
+    window.googleLogin = async function(){
+      const provider = new GoogleAuthProvider();
+      try{
+        const result = await signInWithPopup(auth, provider);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        googleAccessToken = credential.accessToken;
 
-window.switchWeatherTab = function(tab){
-  document.querySelectorAll(".circle-tab").forEach(b=>{
-    b.classList.toggle("active", b.dataset.tab===tab);
-  });
+        alert("Googleログインに成功しました");
 
-  document.getElementById("weather-now").style.display = tab==="now"?"block":"none";
-  document.getElementById("weather-today").style.display = tab==="today"?"block":"none";
-  document.getElementById("weather-week").style.display = tab==="week"?"block":"none";
-};
+        await loadCalendarEvents();
+        drawCalendar();
+        loadTodayNotice();
+      }catch(e){
+        console.error(e);
+        alert("Googleログインに失敗しました");
+      }
+    };
 
-/* 時計 */
-function startClock(){
-  setInterval(()=>{
-    const now=new Date();
-    document.getElementById("datetime").textContent=
-      `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 `
-      +`${now.getHours()}時${String(now.getMinutes()).padStart(2,"0")}分${String(now.getSeconds()).padStart(2,"0")}秒`;
-  },1000);
-}
+    // Googleカレンダーから予定取得
+    async function loadCalendarEvents(){
+      if(!googleAccessToken){
+        calendarEvents = [];
+        return;
+      }
 
-/* テーマ切り替え */
-window.toggleTheme = function(){
-  document.body.classList.toggle("light");
-  localStorage.setItem("theme",document.body.classList.contains("light")?"light":"dark");
-  drawCalendar();
-};
+      const now = new Date();
+      const first = new Date(now.getFullYear(), now.getMonth(), 1);
+      const last  = new Date(now.getFullYear(), now.getMonth()+1, 0);
 
-if(localStorage.getItem("theme")==="light"){
-  document.body.classList.add("light");
-}
+      const timeMin = first.toISOString();
+      const timeMax = last.toISOString();
 
-/* カレンダー */
-let calendarYear, calendarMonth;
-function initCalendar(){
-  const now = new Date();
-  calendarYear = now.getFullYear();
-  calendarMonth = now.getMonth();
-  drawCalendar();
-}
+      const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events`
+        + `?timeMin=${encodeURIComponent(timeMin)}`
+        + `&timeMax=${encodeURIComponent(timeMax)}`
+        + `&singleEvents=true`
+        + `&orderBy=startTime`;
 
-function drawCalendar(){
-  const grid = document.getElementById("calendar-grid");
-  const label = document.getElementById("calendar-month-label");
-  if(!grid || !label) return;
+      const res = await fetch(url, {
+        headers:{ Authorization:`Bearer ${googleAccessToken}` }
+      });
 
-  grid.innerHTML = "";
-  const first = new Date(calendarYear, calendarMonth, 1);
-  const last = new Date(calendarYear, calendarMonth+1, 0);
-  const startDay = first.getDay();
-  const daysInMonth = last.getDate();
+      if(!res.ok){
+        console.error("Calendar API error", await res.text());
+        calendarEvents = [];
+        return;
+      }
 
-  label.textContent = `${calendarYear}年 ${calendarMonth+1}月`;
-
-  const headers = ["日","月","火","水","木","金","土"];
-  headers.forEach(h=>{
-    const cell = document.createElement("div");
-    cell.className = "calendar-cell calendar-cell-header";
-    cell.textContent = h;
-    grid.appendChild(cell);
-  });
-
-  for(let i=0;i<startDay;i++){
-    const cell = document.createElement("div");
-    cell.className = "calendar-cell";
-    grid.appendChild(cell);
-  }
-
-  const today = new Date();
-  const isLight = document.body.classList.contains("light");
-
-  for(let d=1; d<=daysInMonth; d++){
-    const cell = document.createElement("div");
-    cell.className = "calendar-cell calendar-cell-day";
-    cell.textContent = d;
-
-    if(today.getFullYear()===calendarYear &&
-       today.getMonth()===calendarMonth &&
-       today.getDate()===d){
-      cell.classList.add(isLight ? "calendar-cell-today-light" : "calendar-cell-today-dark");
+      const data = await res.json();
+      calendarEvents = (data.items || []).map(ev=>{
+        const start = ev.start.dateTime || ev.start.date;
+        const d = new Date(start);
+        return {
+          title: ev.summary || "(無題)",
+          year: d.getFullYear(),
+          month: d.getMonth(),
+          day: d.getDate()
+        };
+      });
     }
 
-    cell.onclick = ()=>showDayEvents(calendarYear, calendarMonth, d);
-    grid.appendChild(cell);
-  }
-}
+    // カレンダー描画
+    function drawCalendar(){
+      const grid = document.getElementById("calendar-grid");
+      const label = document.getElementById("calendar-month-label");
+      if(!grid || !label) return;
 
-window.prevMonth = function(){
-  calendarMonth--;
-  if(calendarMonth<0){
-    calendarMonth=11;
-    calendarYear--;
-  }
-  drawCalendar();
-};
+      grid.innerHTML = "";
+      const first = new Date(calendarYear, calendarMonth, 1);
+      const last = new Date(calendarYear, calendarMonth+1, 0);
+      const startDay = first.getDay();
+      const daysInMonth = last.getDate();
 
-window.nextMonth = function(){
-  calendarMonth++;
-  if(calendarMonth>11){
-    calendarMonth=0;
-    calendarYear++;
-  }
-  drawCalendar();
-};
+      label.textContent = `${calendarYear}年 ${calendarMonth+1}月`;
 
-function showDayEvents(y,m,d){
-  const el = document.getElementById("selectedDayEvents");
-  el.textContent = `${y}年${m+1}月${d}日の予定（Googleカレンダー連携予定）`;
-}
+      const headers = ["日","月","火","水","木","金","土"];
+      headers.forEach(h=>{
+        const cell = document.createElement("div");
+        cell.className = "calendar-cell calendar-cell-header";
+        cell.textContent = h;
+        grid.appendChild(cell);
+      });
 
-/* 今日のお知らせ（仮） */
-function loadTodayNotice(){
-  const el = document.getElementById("todayNotice");
-  const now = new Date();
-  el.textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日の予定は、Googleカレンダー連携後に表示されます。`;
-}
+      for(let i=0;i<startDay;i++){
+        const cell = document.createElement("div");
+        cell.className = "calendar-cell";
+        grid.appendChild(cell);
+      }
 
-/* ファイルアップロード */
-window.uploadFile = async function(){
-  const title = document.getElementById("fileTitle").value.trim();
-  const fileInput = document.getElementById("fileInput");
-  if(!title || !fileInput.files[0]){
-    alert("タイトルとファイルは必須です");
-    return;
-  }
-  const file = fileInput.files[0];
-  const path = `files/${Date.now()}_${file.name}`;
-  const refFile = sRef(storage, path);
-  await uploadBytes(refFile, file);
-  const url = await getDownloadURL(refFile);
+      const today = new Date();
+      const isLight = document.body.classList.contains("light");
 
-  const listRef = ref(db,"files");
-  const snapshot = await get(listRef);
-  const files = snapshot.val() || [];
-  files.push({title, url, name:file.name, type:file.type});
-  await set(listRef, files);
-  document.getElementById("fileTitle").value = "";
-  fileInput.value = "";
-  loadFiles();
-};
+      for(let d=1; d<=daysInMonth; d++){
+        const cell = document.createElement("div");
+        cell.className = "calendar-cell calendar-cell-day";
+        cell.textContent = d;
 
-async function loadFiles(){
-  const el = document.getElementById("fileList");
-  if(!el) return;
-  el.innerHTML = "";
-  const snapshot = await get(ref(db,"files"));
-  const files = snapshot.val() || [];
-  files.forEach(f=>{
-    const card = document.createElement("div");
-    card.className = "file-card";
-    const thumb = document.createElement("div");
-    thumb.className = "file-thumb";
+        if(today.getFullYear()===calendarYear &&
+           today.getMonth()===calendarMonth &&
+           today.getDate()===d){
+          cell.classList.add(isLight ? "calendar-cell-today-light" : "calendar-cell-today-dark");
+        }
 
-    let label = "FILE";
-    if(f.type.startsWith("image/")) label = "IMG";
-    else if(f.type==="application/pdf") label = "PDF";
-    else if(f.type.startsWith("video/")) label = "VID";
+        const hasEvent = calendarEvents.some(ev =>
+          ev.year===calendarYear &&
+          ev.month===calendarMonth &&
+          ev.day===d
+        );
+        if(hasEvent){
+          cell.classList.add("calendar-cell-has-event");
+        }
 
-    thumb.textContent = label;
+        cell.onclick = ()=>showDayEvents(calendarYear, calendarMonth, d);
+        grid.appendChild(cell);
+      }
+    }
 
-    const title = document.createElement("div");
-    title.textContent = f.title;
+    // 月移動
+    window.prevMonth = function(){
+      calendarMonth--;
+      if(calendarMonth < 0){
+        calendarMonth = 11;
+        calendarYear--;
+      }
+      drawCalendar();
+    };
+    window.nextMonth = function(){
+      calendarMonth++;
+      if(calendarMonth > 11){
+        calendarMonth = 0;
+        calendarYear++;
+      }
+      drawCalendar();
+    };
 
-    card.appendChild(thumb);
-    card.appendChild(title);
-    card.onclick = ()=>window.open(f.url,"_blank");
-    el.appendChild(card);
-  });
-}
+    // 日付を押したときの予定表示
+    function showDayEvents(y,m,d){
+      const el = document.getElementById("selectedDayEvents");
+      const events = calendarEvents.filter(ev =>
+        ev.year===y && ev.month===m && ev.day===d
+      );
 
-/* 初期化 */
-signInAnonymously(auth).then(()=>cloudLoad());
-render();
-startClock();
-loadCurrentWeather();
-loadTodayWeather();
-loadWeeklyWeather();
-initCalendar();
-loadTodayNotice();
-loadFiles();
-</script>
+      if(events.length===0){
+        el.textContent = `${y}年${m+1}月${d}日の予定はありません`;
+        return;
+      }
 
+      const lines = events.map(ev => `・${ev.title}`);
+      el.innerHTML = `${y}年${m+1}月${d}日の予定<br>${lines.join("<br>")}`;
+    }
+
+    // 今日のお知らせ
+    function loadTodayNotice(){
+      const el = document.getElementById("todayNotice");
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = now.getMonth();
+      const d = now.getDate();
+
+      if(!googleAccessToken){
+        el.textContent = "Googleでログインすると、今日の予定がここに表示されます。";
+        return;
+      }
+
+      const events = calendarEvents.filter(ev =>
+        ev.year===y && ev.month===m && ev.day===d
+      );
+
+      if(events.length===0){
+        el.textContent = "今日の予定はありません。";
+        return;
+      }
+
+      const lines = events.map(ev => `・${ev.title}`);
+      el.innerHTML = `今日（${y}年${m+1}月${d}日）の予定<br>${lines.join("<br>")}`;
+    }
+
+    // 初期化
+    async function init(){
+      await signInAnonymously(auth);
+      await loadUrls();
+      await loadFiles();
+      drawCalendar();
+      loadTodayNotice();
+    }
+
+    init();
+  </script>
 </body>
 </html>
