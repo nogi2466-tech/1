@@ -55,31 +55,6 @@ header {
   color:#fff;
 }
 
-/* 起動画面 */
-#startup {
-  padding:24px;
-  text-align:center;
-}
-.startup-title {
-  font-size:20px;
-  margin-bottom:20px;
-}
-.startup-buttons {
-  display:flex;
-  justify-content:center;
-  gap:16px;
-  flex-wrap:wrap;
-}
-.startup-buttons button {
-  padding:12px 24px;
-  border:none;
-  border-radius:10px;
-  font-size:16px;
-  cursor:pointer;
-  background:#0099ff;
-  color:#fff;
-}
-
 .nav {
   display:flex;
   gap:10px;
@@ -244,129 +219,110 @@ textarea {
   justify-content:flex-end;
   gap:10px;
 }
-
-/* お知らせモード用 */
-#notice-nav {
-  display:flex;
-  gap:10px;
-  padding:14px;
-  background:#1a1a1a;
-  justify-content:center;
-  flex-wrap:wrap;
-}
-#notice-nav button {
-  padding:10px 18px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  color:#fff;
-  font-size:15px;
-}
-#notice-nav button.active {
-  outline:3px solid #fff;
-}
-#notice-nav-notice { background:#0099ff; }
-#notice-nav-calendar { background:#27ae60; }
-#notice-nav-files { background:#8e44ad; }
-
-/* カレンダー強化版 */
-.calendar {
-  max-width:420px;
-  margin:0 auto;
-}
-.calendar-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:10px;
-}
-.calendar-grid {
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:4px;
-}
-.calendar-cell {
-  padding:8px;
-  border-radius:6px;
-  text-align:center;
-  font-size:14px;
-}
-.calendar-cell-header {
-  font-weight:bold;
-}
-.calendar-cell-day {
-  cursor:pointer;
-}
-.calendar-cell-today-light {
-  background:#ffeb3b;
-  color:#000;
-}
-.calendar-cell-today-dark {
-  background:#ff9800;
-  color:#fff;
-}
-.calendar-cell-has-event::after {
-  content:"●";
-  display:block;
-  font-size:10px;
-  margin-top:2px;
-}
-
-/* ファイル */
-.file-list {
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.file-card {
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:10px;
-  border-radius:10px;
-  background:#1c1c1c;
-}
-.file-thumb {
-  width:48px;
-  height:48px;
-  border-radius:6px;
-  background:#333;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:12px;
-}
-body.light .file-card { background:#fff; }
-body.light .file-thumb { background:#ddd; }
 </style>
 </head>
 <body>
 
 <header>tetsudo-site2</header>
+
+<div class="nav">
+  <button id="nav-all" class="active" onclick="setCategory('all')">すべて</button>
+  <button id="nav-keio" onclick="setCategory('京王')">京王</button>
+  <button id="nav-jr" onclick="setCategory('JR')">JR</button>
+  <button id="nav-ote" onclick="setCategory('大手私鉄')">大手私鉄</button>
+  <button id="nav-chika" onclick="setCategory('地下鉄')">地下鉄</button>
+  <button id="nav-etc" onclick="setCategory('その他')">その他</button>
+  <button id="nav-data" onclick="setCategory('資料')">資料</button>
+  <button id="nav-fav" onclick="setCategory('よく使う')">よく使う</button>
+  <button id="nav-info" onclick="showSection('info')">情報</button>
+  <button id="nav-settings" onclick="showSection('settings')">設定</button>
+</div>
+
+<section id="section-urls" class="section active">
+
+  <input id="searchInput" placeholder="タイトル検索"
+         oninput="searchTitle()"
+         style="width:100%; padding:10px; margin-bottom:12px; border-radius:8px; border:none; font-size:16px;">
+
+  <div id="urlList"></div>
+</section>
+
+<section id="section-info" class="section">
+  <div class="card">
+    <h3>天気情報（東京）</h3>
+    <div class="circle-tabs">
+      <button class="circle-tab active" data-tab="now" onclick="switchWeatherTab('now')">現在</button>
+      <button class="circle-tab" data-tab="today" onclick="switchWeatherTab('today')">今日</button>
+      <button class="circle-tab" data-tab="week" onclick="switchWeatherTab('week')">1週間</button>
+    </div>
+
+    <div id="weather-now">読み込み中...</div>
+    <div id="weather-today" style="display:none;">読み込み中...</div>
+    <div id="weather-week" style="display:none;">読み込み中...</div>
+  </div>
+
+  <div class="card">
+    <h3>現在時刻</h3>
+    <div id="datetime">読み込み中...</div>
+  </div>
+</section>
+
+<section id="section-settings" class="section">
+  <div class="card">
+    <h3>クラウド同期</h3>
+    <button class="primary" onclick="cloudSave()">クラウド保存</button>
+    <button class="gray" onclick="cloudLoad()">クラウド受信</button>
+  </div>
+
+  <div class="card">
+    <h3>URL追加（パスワード必要）</h3>
+    <input id="passInput" type="password" placeholder="パスワードを入力">
+    <button class="primary" onclick="checkPass()">認証</button>
+    <button id="openAddBtn" class="gray" style="display:none;" onclick="openAddModal()">新規追加画面を開く</button>
+  </div>
+
+  <div class="card">
+    <h3>テーマ切り替え</h3>
+    <button class="primary" onclick="toggleTheme()">ライト / ダーク切り替え</button>
+  </div>
+</section>
+
+<div id="modalBg" class="modal-bg">
+  <div class="modal">
+    <h3 id="modalTitle">新規追加</h3>
+
+    <input id="formTitle" placeholder="タイトル">
+    <input id="formUrl" placeholder="URL">
+    <textarea id="formDetail" placeholder="詳細"></textarea>
+
+    <select id="formCategory">
+      <option value="京王">京王</option>
+      <option value="JR">JR</option>
+      <option value="大手私鉄">大手私鉄</option>
+      <option value="地下鉄">地下鉄</option>
+      <option value="その他">その他</option>
+      <option value="資料">資料</option>
+      <option value="よく使う">よく使う</option>
+    </select>
+
+    <div class="modal-buttons">
+      <button class="gray" onclick="closeModal()">閉じる</button>
+      <button id="modalSubmitBtn" class="primary" onclick="submitModal()">追加する</button>
+    </div>
+  </div>
+</div>
 <script type="module">
-/* Firebase 読み込み */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
-import { 
-  getAuth, 
-  signInAnonymously,
-  GoogleAuthProvider,
-  signInWithPopup
-} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-import { 
-  getStorage, 
-  ref as sRef, 
-  uploadBytes, 
-  getDownloadURL 
-} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
 /* Firebase設定 */
 const firebaseConfig = {
-  apiKey:"AIzaSyD55Pawag1UichGwM-Uxddivb8lFr7QOU8",
+  apiKey:"d47572a1cd7e50746a614ef286b5375c",
   authDomain:"tetsudo-site6.firebaseapp.com",
   databaseURL:"https://tetsudo-site6-default-rtdb.firebaseio.com",
   projectId:"tetsudo-site6",
-  storageBucket:"tetsudo-site6.appspot.com",
+  storageBucket:"tetsudo-site6.firebasestorage.app",
   messagingSenderId:"563943849207",
   appId:"1:563943849207:web:1c813365201cb431d6e7f2"
 };
@@ -374,7 +330,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase();
 const auth = getAuth();
-const storage = getStorage();
 
 /* ローカルデータ */
 let urls = JSON.parse(localStorage.getItem("urls") || "[]");
@@ -382,37 +337,6 @@ let currentCategory = "all";
 let editIndex = null;
 let isAuthed = false;
 let searchKeyword = "";
-let currentMode = null;
-
-/* Googleログイン用 */
-let googleAccessToken = null;
-let calendarEvents = [];
-
-/* 起動画面 */
-window.openMode = function(mode){
-  currentMode = mode;
-  document.getElementById("startup").style.display = "none";
-
-  if(mode === "urls"){
-    document.getElementById("urlsMode").style.display = "block";
-    render();   // ← ここで初めて呼ぶ
-  }else{
-    document.getElementById("noticeMode").style.display = "block";
-  }
-};
-
-
-/* お知らせモード内タブ */
-window.setNoticeSection = function(name){
-  ["notice","calendar","files"].forEach(id=>{
-    document.getElementById("notice-section-"+id).classList.remove("active");
-    document.getElementById("notice-section-"+id).style.display = "none";
-    document.getElementById("notice-nav-"+id).classList.remove("active");
-  });
-  document.getElementById("notice-section-"+name).classList.add("active");
-  document.getElementById("notice-section-"+name).style.display = "block";
-  document.getElementById("notice-nav-"+name).classList.add("active");
-};
 
 /* タイトル検索 */
 window.searchTitle = function(){
@@ -434,9 +358,9 @@ function navIdForCategory(cat){
   }[cat] || "nav-all";
 }
 
-/* 画面切り替え（URLモード） */
+/* 画面切り替え */
 window.showSection = function(name){
-  document.querySelectorAll("#urlsMode .section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
   document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
 
   if(name==="info"){
@@ -482,16 +406,20 @@ function render(){
 
   let filtered = urls;
 
+  /* カテゴリ絞り込み */
   if(currentCategory !== "all"){
     filtered = filtered.filter(u => u.category === currentCategory);
   } else {
+    /* すべて → 資料を除外 */
     filtered = filtered.filter(u => u.category !== "資料");
   }
 
+  /* タイトル検索 */
   if(searchKeyword !== ""){
     filtered = filtered.filter(u => u.title.includes(searchKeyword));
   }
 
+  /* 五十音順 */
   filtered.sort((a,b)=>a.title.localeCompare(b.title,"ja"));
 
   filtered.forEach((item)=>{
@@ -514,14 +442,18 @@ function render(){
       `;
     }
 
+    /* タイトル左上・大きく、詳細は改行反映、URLは非表示 */
     div.innerHTML = `
       <div class="item-inner" style="width:100%;">
         <div class="item-title">${item.title}</div>
+
         <div class="item-detail">
           ${(item.detail || "").replace(/\n/g, "<br>")}
         </div>
+
         <div class="item-category">カテゴリ: ${item.category}</div>
       </div>
+
       <div class="item-buttons">${buttonsHtml}</div>
     `;
     list.appendChild(div);
@@ -610,14 +542,14 @@ window.removeUrl = function(i){
   render();
 };
 
-/* クラウド保存 */
+/* クラウド保存（手動のみ） */
 window.cloudSave = function(){
   set(ref(db,"urlData"), urls).then(()=>{
     alert("クラウドに保存しました");
   });
 };
 
-/* クラウド受信 */
+/* クラウド受信（手動） */
 window.cloudLoad = async function(){
   const snapshot = await get(ref(db,"urlData"));
   urls = snapshot.val() || [];
@@ -632,265 +564,111 @@ onValue(ref(db,"urlData"), snap=>{
   localStorage.setItem("urls", JSON.stringify(urls));
   render();
 });
-/* Googleログイン */
-window.googleLogin = async function(){
-  const provider = new GoogleAuthProvider();
+
+/* 天気API */
+const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
+const lat=35.68, lon=139.76;
+
+/* 現在の天気 */
+async function loadCurrentWeather(){
+  const el=document.getElementById("weather-now");
   try{
-    const result = await signInWithPopup(auth, provider);
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    googleAccessToken = credential.accessToken;
-
-    alert("Googleログイン成功");
-
-    await loadCalendarEvents();
-    drawCalendar();
-    loadTodayNotice();
-  }catch(e){
-    console.error(e);
-    alert("Googleログイン失敗");
-  }
-};
-
-/* Googleカレンダー予定取得 */
-async function loadCalendarEvents(){
-  if(!googleAccessToken){
-    calendarEvents = [];
-    return;
-  }
-
-  const now = new Date();
-  const first = new Date(now.getFullYear(), now.getMonth(), 1);
-  const last  = new Date(now.getFullYear(), now.getMonth()+1, 0);
-
-  const timeMin = first.toISOString();
-  const timeMax = last.toISOString();
-
-  const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events`
-    + `?timeMin=${encodeURIComponent(timeMin)}`
-    + `&timeMax=${encodeURIComponent(timeMax)}`
-    + `&singleEvents=true`
-    + `&orderBy=startTime`;
-
-  const res = await fetch(url, {
-    headers:{ Authorization:`Bearer ${googleAccessToken}` }
-  });
-
-  if(!res.ok){
-    console.error("Calendar API error", await res.text());
-    calendarEvents = [];
-    return;
-  }
-
-  const data = await res.json();
-  calendarEvents = (data.items || []).map(ev=>{
-    const start = ev.start.dateTime || ev.start.date;
-    const d = new Date(start);
-    return {
-      title: ev.summary || "(無題)",
-      year: d.getFullYear(),
-      month: d.getMonth(),
-      day: d.getDate()
-    };
-  });
+    const r=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
+    const d=await r.json();
+    el.innerHTML=`
+      <div style="text-align:center;">
+        <img src="https://openweathermap.org/img/wn/${d.weather[0].icon}@4x.png" width="80">
+        <div>${d.weather[0].description}</div>
+        <div>${d.main.temp}℃</div>
+      </div>`;
+  }catch{ el.textContent="失敗"; }
 }
 
-/* カレンダー強化版描画 */
-function drawCalendar(){
-  const grid = document.getElementById("calendar-grid");
-  const label = document.getElementById("calendar-month-label");
-  if(!grid || !label) return;
+/* 今日の天気 */
+async function loadTodayWeather(){
+  const el=document.getElementById("weather-today");
+  try{
+    const r=await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
+    const d=await r.json();
+    const t=d.list[0];
+    el.innerHTML=`
+      <div style="text-align:center;">
+        <img src="https://openweathermap.org/img/wn/${t.weather[0].icon}@4x.png" width="80">
+        <div>${t.weather[0].description}</div>
+        <div>${t.main.temp}℃</div>
+      </div>`;
+  }catch{ el.textContent="失敗"; }
+}
 
-  grid.innerHTML = "";
-  const first = new Date(calendarYear, calendarMonth, 1);
-  const last = new Date(calendarYear, calendarMonth+1, 0);
-  const startDay = first.getDay();
-  const daysInMonth = last.getDate();
+/* 1週間の天気 */
+async function loadWeeklyWeather(){
+  const el=document.getElementById("weather-week");
+  try{
+    const r=await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
+    const d=await r.json();
 
-  label.textContent = `${calendarYear}年 ${calendarMonth+1}月`;
+    const wrap=document.createElement("div");
+    wrap.className="weather-week";
 
-  const headers = ["日","月","火","水","木","金","土"];
-  headers.forEach(h=>{
-    const cell = document.createElement("div");
-    cell.className = "calendar-cell calendar-cell-header";
-    cell.textContent = h;
-    grid.appendChild(cell);
-  });
+    for(let i=0;i<7;i++){
+      const day=d.list[i];
+      const dt=new Date(day.dt*1000);
+      const label=`${dt.getMonth()+1}/${dt.getDate()}`;
 
-  for(let i=0;i<startDay;i++){
-    const cell = document.createElement("div");
-    cell.className = "calendar-cell";
-    grid.appendChild(cell);
-  }
-
-  const today = new Date();
-  const isLight = document.body.classList.contains("light");
-
-  for(let d=1; d<=daysInMonth; d++){
-    const cell = document.createElement("div");
-    cell.className = "calendar-cell calendar-cell-day";
-    cell.textContent = d;
-
-    /* 今日強調 */
-    if(today.getFullYear()===calendarYear &&
-       today.getMonth()===calendarMonth &&
-       today.getDate()===d){
-      cell.classList.add(isLight ? "calendar-cell-today-light" : "calendar-cell-today-dark");
+      const box=document.createElement("div");
+      box.className="weather-day";
+      box.innerHTML=`
+        <div>${label}</div>
+        <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}.png" width="40">
+        <div>${day.weather[0].description}</div>
+        <div>${day.main.temp}℃</div>
+      `;
+      wrap.appendChild(box);
     }
 
-    /* Google予定がある日をマーク */
-    const hasEvent = calendarEvents.some(ev =>
-      ev.year===calendarYear &&
-      ev.month===calendarMonth &&
-      ev.day===d
-    );
-    if(hasEvent){
-      cell.classList.add("calendar-cell-has-event");
-    }
-
-    cell.onclick = ()=>showDayEvents(calendarYear, calendarMonth, d);
-    grid.appendChild(cell);
-  }
+    el.innerHTML="";
+    el.appendChild(wrap);
+  }catch{ el.textContent="失敗"; }
 }
 
-/* 月移動 */
-window.prevMonth = function(){
-  calendarMonth--;
-  if(calendarMonth<0){
-    calendarMonth=11;
-    calendarYear--;
-  }
-  drawCalendar();
-};
-window.nextMonth = function(){
-  calendarMonth++;
-  if(calendarMonth>11){
-    calendarMonth=0;
-    calendarYear++;
-  }
-  drawCalendar();
-};
-
-/* 選択した日の予定表示 */
-function showDayEvents(y,m,d){
-  const el = document.getElementById("selectedDayEvents");
-
-  const events = calendarEvents.filter(ev =>
-    ev.year===y && ev.month===m && ev.day===d
-  );
-
-  if(events.length===0){
-    el.textContent = `${y}年${m+1}月${d}日の予定はありません`;
-    return;
-  }
-
-  const lines = events.map(ev => `・${ev.title}`);
-  el.innerHTML = `${y}年${m+1}月${d}日の予定<br>${lines.join("<br>")}`;
-}
-
-/* 今日のお知らせ */
-function loadTodayNotice(){
-  const el = document.getElementById("todayNotice");
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth();
-  const d = now.getDate();
-
-  if(!googleAccessToken){
-    el.textContent = "Googleでログインすると、今日の予定がここに表示されます。";
-    return;
-  }
-
-  const events = calendarEvents.filter(ev =>
-    ev.year===y && ev.month===m && ev.day===d
-  );
-
-  if(events.length===0){
-    el.textContent = "今日の予定はありません。";
-    return;
-  }
-
-  const lines = events.map(ev => `・${ev.title}`);
-  el.innerHTML = `今日（${y}年${m+1}月${d}日）の予定<br>${lines.join("<br>")}`;
-}
-
-/* ファイル追加（モーダル形式に統合済み） */
-window.uploadFile = async function(){
-  const title = document.getElementById("fileTitle").value.trim();
-  const fileInput = document.getElementById("fileInput");
-  if(!title || !fileInput.files[0]){
-    alert("タイトルとファイルは必須です");
-    return;
-  }
-  const file = fileInput.files[0];
-  const path = `files/${Date.now()}_${file.name}`;
-  const refFile = sRef(storage, path);
-
-  await uploadBytes(refFile, file);
-  const url = await getDownloadURL(refFile);
-
-  const listRef = ref(db,"files");
-  const snapshot = await get(listRef);
-  const files = snapshot.val() || [];
-  files.push({title, url, name:file.name, type:file.type});
-  await set(listRef, files);
-
-  document.getElementById("fileTitle").value = "";
-  fileInput.value = "";
-  loadFiles();
-};
-
-/* ファイル一覧 */
-async function loadFiles(){
-  const el = document.getElementById("fileList");
-  if(!el) return;
-  el.innerHTML = "";
-
-  const snapshot = await get(ref(db,"files"));
-  const files = snapshot.val() || [];
-
-  files.forEach(f=>{
-    const card = document.createElement("div");
-    card.className = "file-card";
-
-    const thumb = document.createElement("div");
-    thumb.className = "file-thumb";
-
-    let label = "FILE";
-    if(f.type.startsWith("image/")) label = "IMG";
-    else if(f.type==="application/pdf") label = "PDF";
-    else if(f.type.startsWith("video/")) label = "VID";
-
-    thumb.textContent = label;
-
-    const title = document.createElement("div");
-    title.textContent = f.title;
-
-    card.appendChild(thumb);
-    card.appendChild(title);
-    card.onclick = ()=>window.open(f.url,"_blank");
-
-    el.appendChild(card);
+/* 天気タブ切り替え */
+window.switchWeatherTab = function(tab){
+  document.querySelectorAll(".circle-tab").forEach(b=>{
+    b.classList.toggle("active", b.dataset.tab===tab);
   });
+
+  document.getElementById("weather-now").style.display = tab==="now"?"block":"none";
+  document.getElementById("weather-today").style.display = tab==="today"?"block":"none";
+  document.getElementById("weather-week").style.display = tab==="week"?"block":"none";
+};
+
+/* 時計 */
+function startClock(){
+  setInterval(()=>{
+    const now=new Date();
+    document.getElementById("datetime").textContent=
+      `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 `
+      +`${now.getHours()}時${String(now.getMinutes()).padStart(2,"0")}分${String(now.getSeconds()).padStart(2,"0")}秒`;
+  },1000);
+}
+
+/* テーマ切り替え */
+window.toggleTheme = function(){
+  document.body.classList.toggle("light");
+  localStorage.setItem("theme",document.body.classList.contains("light")?"light":"dark");
+};
+
+if(localStorage.getItem("theme")==="light"){
+  document.body.classList.add("light");
 }
 
 /* 初期化 */
-async function init(){
-  await signInAnonymously(auth);
-  await cloudLoad();
-
-  // render() は絶対にここで呼ばない
-
-  startClock();
-  loadCurrentWeather();
-  loadTodayWeather();
-  loadWeeklyWeather();
-  initCalendar();
-  loadTodayNotice();
-  loadFiles();
-}
-
-
-init();
+signInAnonymously(auth).then(()=>cloudLoad());
+render();
+startClock();
+loadCurrentWeather();
+loadTodayWeather();
+loadWeeklyWeather();
 </script>
 
 </body>
