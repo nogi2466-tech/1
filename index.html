@@ -235,6 +235,72 @@ textarea {
 
   <div id="urlList"></div>
 </section>
+
+<section id="section-info" class="section">
+  <div class="card">
+    <h3>天気情報（東京）</h3>
+    <div class="circle-tabs">
+      <button class="circle-tab active" data-tab="now" onclick="switchWeatherTab('now')">現在</button>
+      <button class="circle-tab" data-tab="today" onclick="switchWeatherTab('today')">今日</button>
+      <button class="circle-tab" data-tab="week" onclick="switchWeatherTab('week')">1週間</button>
+    </div>
+
+    <div id="weather-now">読み込み中...</div>
+    <div id="weather-today" style="display:none;">読み込み中...</div>
+    <div id="weather-week" style="display:none;">読み込み中...</div>
+  </div>
+
+  <div class="card">
+    <h3>現在時刻</h3>
+    <div id="datetime">読み込み中...</div>
+  </div>
+</section>
+
+<section id="section-settings" class="section">
+  <div class="card">
+    <h3>クラウド同期</h3>
+    <button class="primary" onclick="cloudSave()">クラウド保存</button>
+    <button class="gray" onclick="cloudLoad()">クラウド受信</button>
+  </div>
+
+  <div class="card">
+    <h3>URL追加（パスワード必要）</h3>
+    <input id="passInput" type="password" placeholder="パスワードを入力">
+    <button class="primary" onclick="checkPass()">認証</button>
+    <button id="openAddBtn" class="gray" style="display:none;" onclick="openAddModal()">新規追加画面を開く</button>
+  </div>
+
+  <div class="card">
+    <h3>テーマ切り替え</h3>
+    <button class="primary" onclick="toggleTheme()">ライト / ダーク切り替え</button>
+  </div>
+</section>
+
+<div id="modalBg" class="modal-bg">
+  <div class="modal">
+    <h3 id="modalTitle">新規追加</h3>
+
+    <input id="formTitle" placeholder="タイトル">
+    <input id="formUrl" placeholder="URL">
+    <textarea id="formDetail" placeholder="詳細"></textarea>
+
+    <select id="formCategory">
+      <option value="京王">京王</option>
+      <option value="JR">JR</option>
+      <option value="大手私鉄">大手私鉄</option>
+      <option value="地下鉄">地下鉄</option>
+      <option value="その他">その他</option>
+      <option value="資料">資料</option>
+      <option value="画像">画像</option>
+      <option value="よく使う">よく使う</option>
+    </select>
+
+    <div class="modal-buttons">
+      <button class="gray" onclick="closeModal()">閉じる</button>
+      <button class="primary" onclick="submitModal()">追加する</button>
+    </div>
+  </div>
+</div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
@@ -376,14 +442,98 @@ function render(){
     list.appendChild(div);
   });
 }
-/* Firebase保存 */
+
+/* パスワード認証 */
+window.checkPass = function(){
+  if(document.getElementById("passInput").value==="0829"){
+    isAuthed = true;
+    document.getElementById("openAddBtn").style.display="inline-block";
+    alert("認証成功");
+    render();
+  }else{
+    alert("違います");
+  }
+};
+
+/* モーダル（追加） */
+window.openAddModal = function(){
+  editIndex=null;
+
+  document.getElementById("modalTitle").textContent="新規追加";
+  document.querySelector(".modal-buttons .primary").textContent = "追加する";
+
+  document.getElementById("formTitle").value="";
+  document.getElementById("formUrl").value="";
+  document.getElementById("formDetail").value="";
+  document.getElementById("formCategory").value="京王";
+
+  document.getElementById("modalBg").style.display="flex";
+};
+
+/* モーダル（編集） */
+window.openEditModal = function(i){
+  editIndex=i;
+  const item=urls[i];
+
+  document.getElementById("modalTitle").textContent="編集";
+  document.querySelector(".modal-buttons .primary").textContent = "上書き保存";
+
+  document.getElementById("formTitle").value=item.title;
+  document.getElementById("formUrl").value=item.url;
+  document.getElementById("formDetail").value=item.detail;
+  document.getElementById("formCategory").value=item.category;
+
+  document.getElementById("modalBg").style.display="flex";
+};
+
+/* モーダル閉じる */
+window.closeModal = function(){
+  document.getElementById("modalBg").style.display="none";
+};
+
+/* モーダル送信 */
+window.submitModal = function(){
+  const title=document.getElementById("formTitle").value.trim();
+  const url=document.getElementById("formUrl").value.trim();
+  const detail=document.getElementById("formDetail").value.trim();
+  const category=document.getElementById("formCategory").value;
+
+  if(!title || !url){
+    alert("タイトルとURLは必須です");
+    return;
+  }
+
+  const data={title,url,detail,category};
+
+  if(editIndex===null){
+    urls.push(data);
+  }else{
+    urls[editIndex]=data;
+  }
+
+  localStorage.setItem("urls",JSON.stringify(urls));
+  cloudSave(true);
+  render();
+  closeModal();
+};
+
+/* 削除 */
+window.removeUrl = function(i){
+  if(!confirm("削除しますか？")) return;
+  urls.splice(i,1);
+  localStorage.setItem("urls",JSON.stringify(urls));
+  cloudSave(true);
+  render();
+};
+
+/* クラウド保存 */
 window.cloudSave = function(silent=false){
   set(ref(db,"urlData"),urls).then(()=>{
     if(!silent) alert("保存しました");
   });
 };
 
-/* Firebase受信（強制読み込み） */
+/* クラウド受信 */
 window.cloudLoad = async function(){
   const snapshot = await get(ref(db,"urlData"));
   urls = snapshot.val() || [];
@@ -392,7 +542,7 @@ window.cloudLoad = async function(){
   alert("クラウドから受信しました");
 };
 
-/* 自動同期（リアルタイム） */
+/* 自動同期 */
 onValue(ref(db,"urlData"),snap=>{
   urls=snap.val()||[];
   localStorage.setItem("urls",JSON.stringify(urls));
