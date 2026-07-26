@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>tetsudo-site2</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- スマホでズームアウトしても黒帯が出ない設定 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
 
 <style>
 :root {
@@ -379,7 +381,9 @@ function render(){
   let filtered = currentCategory==="all" ? urls : urls.filter(u=>u.category===currentCategory);
   filtered.sort((a,b)=>a.title.localeCompare(b.title,"ja"));
 
-  filtered.forEach((item,index)=>{
+  filtered.forEach((item)=>{
+    const realIndex = urls.indexOf(item);  /* ← 編集ズレ防止の修正済み */
+
     const div = document.createElement("div");
     div.className="item";
     div.style.borderLeftColor = categoryBorderColor(item.category);
@@ -392,8 +396,8 @@ function render(){
     let buttonsHtml = "";
     if(isAuthed){
       buttonsHtml = `
-        <button class="gray" onclick="openEditModal(${index})">編集</button>
-        <button class="danger" onclick="removeUrl(${index})">削除</button>
+        <button class="gray" onclick="openEditModal(${realIndex})">編集</button>
+        <button class="danger" onclick="removeUrl(${realIndex})">削除</button>
       `;
     }
 
@@ -506,74 +510,6 @@ onValue(ref(db,"urlData"),snap=>{
   localStorage.setItem("urls",JSON.stringify(urls));
   render();
 });
-
-/* 天気API */
-const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
-const lat=35.68, lon=139.76;
-
-/* 現在の天気 */
-async function loadCurrentWeather(){
-  const el=document.getElementById("weather-now");
-  try{
-    const r=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
-    const d=await r.json();
-    el.innerHTML=`
-      <div style="text-align:center;">
-        <img src="https://openweathermap.org/img/wn/${d.weather[0].icon}@4x.png" width="80">
-        <div>${d.weather[0].description}</div>
-        <div>${d.main.temp}℃</div>
-      </div>`;
-  }catch{ el.textContent="失敗"; }
-}
-
-/* 今日の天気 */
-async function loadTodayWeather(){
-  const el=document.getElementById("weather-today");
-  try{
-    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
-    const d=await r.json();
-    const t=d.daily[0];
-    el.innerHTML=`
-      <div style="text-align:center;">
-        <img src="https://openweathermap.org/img/wn/${t.weather[0].icon}@4x.png" width="80">
-        <div>${t.weather[0].description}</div>
-        <div>${t.temp.max}℃ / ${t.temp.min}℃</div>
-        <div>降水確率 ${Math.round(t.pop*100)}%</div>
-      </div>`;
-  }catch{ el.textContent="失敗"; }
-}
-
-/* 1週間の天気 */
-async function loadWeeklyWeather(){
-  const el=document.getElementById("weather-week");
-  try{
-    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
-    const d=await r.json();
-    const days=d.daily.slice(0,7);
-
-    const wrap=document.createElement("div");
-    wrap.className="weather-week";
-
-    days.forEach((day,i)=>{
-      const dt=new Date(day.dt*1000);
-      const label=i===0?"今日":`${dt.getMonth()+1}/${dt.getDate()}`;
-
-      const box=document.createElement("div");
-      box.className="weather-day";
-      box.innerHTML=`
-        <div>${label}</div>
-        <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}.png" width="40">
-        <div>${day.weather[0].description}</div>
-        <div>${day.temp.max}℃ / ${day.temp.min}℃</div>
-      `;
-      wrap.appendChild(box);
-    });
-
-    el.innerHTML="";
-    el.appendChild(wrap);
-  }catch{ el.textContent="失敗"; }
-}
-
 /* 天気タブ切り替え */
 window.switchWeatherTab = function(tab){
   document.querySelectorAll(".circle-tab").forEach(b=>{
