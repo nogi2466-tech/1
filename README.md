@@ -55,6 +55,31 @@ header {
   color:#fff;
 }
 
+/* 起動画面 */
+#startup {
+  padding:24px;
+  text-align:center;
+}
+.startup-title {
+  font-size:20px;
+  margin-bottom:20px;
+}
+.startup-buttons {
+  display:flex;
+  justify-content:center;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.startup-buttons button {
+  padding:12px 24px;
+  border:none;
+  border-radius:10px;
+  font-size:16px;
+  cursor:pointer;
+  background:#0099ff;
+  color:#fff;
+}
+
 .nav {
   display:flex;
   gap:10px;
@@ -219,73 +244,228 @@ textarea {
   justify-content:flex-end;
   gap:10px;
 }
+
+/* お知らせモード用 */
+#notice-nav {
+  display:flex;
+  gap:10px;
+  padding:14px;
+  background:#1a1a1a;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+#notice-nav button {
+  padding:10px 18px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  color:#fff;
+  font-size:15px;
+}
+#notice-nav button.active {
+  outline:3px solid #fff;
+}
+#notice-nav-notice { background:#0099ff; }
+#notice-nav-calendar { background:#27ae60; }
+#notice-nav-files { background:#8e44ad; }
+
+/* カレンダー */
+.calendar {
+  max-width:420px;
+  margin:0 auto;
+}
+.calendar-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+.calendar-grid {
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:4px;
+}
+.calendar-cell {
+  padding:8px;
+  border-radius:6px;
+  text-align:center;
+  font-size:14px;
+}
+.calendar-cell-header {
+  font-weight:bold;
+}
+.calendar-cell-day {
+  cursor:pointer;
+}
+.calendar-cell-today-light {
+  background:#ffeb3b;
+  color:#000;
+}
+.calendar-cell-today-dark {
+  background:#ff9800;
+  color:#fff;
+}
+.calendar-cell-has-event::after {
+  content:"●";
+  display:block;
+  font-size:10px;
+  margin-top:2px;
+}
+
+/* ファイル */
+.file-list {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.file-card {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border-radius:10px;
+  background:#1c1c1c;
+}
+.file-thumb {
+  width:48px;
+  height:48px;
+  border-radius:6px;
+  background:#333;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+}
+body.light .file-card { background:#fff; }
+body.light .file-thumb { background:#ddd; }
 </style>
 </head>
 <body>
 
 <header>tetsudo-site2</header>
 
-<div class="nav">
-  <button id="nav-all" class="active" onclick="setCategory('all')">すべて</button>
-  <button id="nav-keio" onclick="setCategory('京王')">京王</button>
-  <button id="nav-jr" onclick="setCategory('JR')">JR</button>
-  <button id="nav-ote" onclick="setCategory('大手私鉄')">大手私鉄</button>
-  <button id="nav-chika" onclick="setCategory('地下鉄')">地下鉄</button>
-  <button id="nav-etc" onclick="setCategory('その他')">その他</button>
-  <button id="nav-data" onclick="setCategory('資料')">資料</button>
-  <button id="nav-fav" onclick="setCategory('よく使う')">よく使う</button>
-  <button id="nav-info" onclick="showSection('info')">情報</button>
-  <button id="nav-settings" onclick="showSection('settings')">設定</button>
+<!-- 起動画面 -->
+<div id="startup">
+  <div class="startup-title">どちらを開きますか？</div>
+  <div class="startup-buttons">
+    <button onclick="openMode('urls')">URL一覧</button>
+    <button onclick="openMode('notice')">お知らせ</button>
+  </div>
 </div>
 
-<section id="section-urls" class="section active">
+<!-- URL一覧モード -->
+<div id="urlsMode" style="display:none;">
+  <div class="nav">
+    <button id="nav-all" class="active" onclick="setCategory('all')">すべて</button>
+    <button id="nav-keio" onclick="setCategory('京王')">京王</button>
+    <button id="nav-jr" onclick="setCategory('JR')">JR</button>
+    <button id="nav-ote" onclick="setCategory('大手私鉄')">大手私鉄</button>
+    <button id="nav-chika" onclick="setCategory('地下鉄')">地下鉄</button>
+    <button id="nav-etc" onclick="setCategory('その他')">その他</button>
+    <button id="nav-data" onclick="setCategory('資料')">資料</button>
+    <button id="nav-fav" onclick="setCategory('よく使う')">よく使う</button>
+    <button id="nav-info" onclick="showSection('info')">情報</button>
+    <button id="nav-settings" onclick="showSection('settings')">設定</button>
+  </div>
 
-  <input id="searchInput" placeholder="タイトル検索"
-         oninput="searchTitle()"
-         style="width:100%; padding:10px; margin-bottom:12px; border-radius:8px; border:none; font-size:16px;">
+  <section id="section-urls" class="section active">
+    <input id="searchInput" placeholder="タイトル検索"
+           oninput="searchTitle()"
+           style="width:100%; padding:10px; margin-bottom:12px; border-radius:8px; border:none; font-size:16px;">
+    <div id="urlList"></div>
+  </section>
 
-  <div id="urlList"></div>
-</section>
+  <section id="section-info" class="section">
+    <div class="card">
+      <h3>天気情報（東京）</h3>
+      <div class="circle-tabs">
+        <button class="circle-tab active" data-tab="now" onclick="switchWeatherTab('now')">現在</button>
+        <button class="circle-tab" data-tab="today" onclick="switchWeatherTab('today')">今日</button>
+        <button class="circle-tab" data-tab="week" onclick="switchWeatherTab('week')">1週間</button>
+      </div>
 
-<section id="section-info" class="section">
-  <div class="card">
-    <h3>天気情報（東京）</h3>
-    <div class="circle-tabs">
-      <button class="circle-tab active" data-tab="now" onclick="switchWeatherTab('now')">現在</button>
-      <button class="circle-tab" data-tab="today" onclick="switchWeatherTab('today')">今日</button>
-      <button class="circle-tab" data-tab="week" onclick="switchWeatherTab('week')">1週間</button>
+      <div id="weather-now">読み込み中...</div>
+      <div id="weather-today" style="display:none;">読み込み中...</div>
+      <div id="weather-week" style="display:none;">読み込み中...</div>
     </div>
 
-    <div id="weather-now">読み込み中...</div>
-    <div id="weather-today" style="display:none;">読み込み中...</div>
-    <div id="weather-week" style="display:none;">読み込み中...</div>
+    <div class="card">
+      <h3>現在時刻</h3>
+      <div id="datetime">読み込み中...</div>
+    </div>
+  </section>
+
+  <section id="section-settings" class="section">
+    <div class="card">
+      <h3>クラウド同期</h3>
+      <button class="primary" onclick="cloudSave()">クラウド保存</button>
+      <button class="gray" onclick="cloudLoad()">クラウド受信</button>
+    </div>
+
+    <div class="card">
+      <h3>URL追加（パスワード必要）</h3>
+      <input id="passInput" type="password" placeholder="パスワードを入力">
+      <button class="primary" onclick="checkPass()">認証</button>
+      <button id="openAddBtn" class="gray" style="display:none;" onclick="openAddModal()">新規追加画面を開く</button>
+    </div>
+
+    <div class="card">
+      <h3>テーマ切り替え</h3>
+      <button class="primary" onclick="toggleTheme()">ライト / ダーク切り替え</button>
+    </div>
+  </section>
+</div>
+
+<!-- お知らせモード -->
+<div id="noticeMode" style="display:none;">
+  <div id="notice-nav">
+    <button id="notice-nav-notice" class="active" onclick="setNoticeSection('notice')">お知らせ</button>
+    <button id="notice-nav-calendar" onclick="setNoticeSection('calendar')">カレンダー</button>
+    <button id="notice-nav-files" onclick="setNoticeSection('files')">ファイル</button>
   </div>
 
-  <div class="card">
-    <h3>現在時刻</h3>
-    <div id="datetime">読み込み中...</div>
-  </div>
-</section>
+  <!-- お知らせ -->
+  <section id="notice-section-notice" class="section active">
+    <div class="card">
+      <h3>今日のお知らせ</h3>
+      <div id="todayNotice">読み込み中...</div>
+    </div>
+  </section>
 
-<section id="section-settings" class="section">
-  <div class="card">
-    <h3>クラウド同期</h3>
-    <button class="primary" onclick="cloudSave()">クラウド保存</button>
-    <button class="gray" onclick="cloudLoad()">クラウド受信</button>
-  </div>
+  <!-- カレンダー -->
+  <section id="notice-section-calendar" class="section">
+    <div class="card">
+      <h3>カレンダー</h3>
+      <div class="calendar">
+        <div class="calendar-header">
+          <button class="gray" onclick="prevMonth()">＜</button>
+          <div id="calendar-month-label"></div>
+          <button class="gray" onclick="nextMonth()">＞</button>
+        </div>
+        <div class="calendar-grid" id="calendar-grid"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>選択した日の予定</h3>
+      <div id="selectedDayEvents">日付を選択してください</div>
+    </div>
+  </section>
 
-  <div class="card">
-    <h3>URL追加（パスワード必要）</h3>
-    <input id="passInput" type="password" placeholder="パスワードを入力">
-    <button class="primary" onclick="checkPass()">認証</button>
-    <button id="openAddBtn" class="gray" style="display:none;" onclick="openAddModal()">新規追加画面を開く</button>
-  </div>
+  <!-- ファイル -->
+  <section id="notice-section-files" class="section">
+    <div class="card">
+      <h3>ファイル追加</h3>
+      <input id="fileTitle" placeholder="タイトル">
+      <input id="fileInput" type="file">
+      <button class="primary" onclick="uploadFile()">追加</button>
+    </div>
 
-  <div class="card">
-    <h3>テーマ切り替え</h3>
-    <button class="primary" onclick="toggleTheme()">ライト / ダーク切り替え</button>
-  </div>
-</section>
+    <div class="card">
+      <h3>ファイル一覧</h3>
+      <div id="fileList" class="file-list"></div>
+    </div>
+  </section>
+</div>
 
 <div id="modalBg" class="modal-bg">
   <div class="modal">
@@ -311,10 +491,12 @@ textarea {
     </div>
   </div>
 </div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
 
 /* Firebase設定 */
 const firebaseConfig = {
@@ -322,7 +504,7 @@ const firebaseConfig = {
   authDomain:"tetsudo-site6.firebaseapp.com",
   databaseURL:"https://tetsudo-site6-default-rtdb.firebaseio.com",
   projectId:"tetsudo-site6",
-  storageBucket:"tetsudo-site6.firebasestorage.app",
+  storageBucket:"tetsudo-site6.appspot.com",
   messagingSenderId:"563943849207",
   appId:"1:563943849207:web:1c813365201cb431d6e7f2"
 };
@@ -330,6 +512,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase();
 const auth = getAuth();
+const storage = getStorage();
 
 /* ローカルデータ */
 let urls = JSON.parse(localStorage.getItem("urls") || "[]");
@@ -337,6 +520,30 @@ let currentCategory = "all";
 let editIndex = null;
 let isAuthed = false;
 let searchKeyword = "";
+let currentMode = null;
+
+/* 起動画面 */
+window.openMode = function(mode){
+  currentMode = mode;
+  document.getElementById("startup").style.display = "none";
+  if(mode === "urls"){
+    document.getElementById("urlsMode").style.display = "block";
+  }else{
+    document.getElementById("noticeMode").style.display = "block";
+  }
+};
+
+/* お知らせモード内タブ */
+window.setNoticeSection = function(name){
+  ["notice","calendar","files"].forEach(id=>{
+    document.getElementById("notice-section-"+id).classList.remove("active");
+    document.getElementById("notice-section-"+id).style.display = "none";
+    document.getElementById("notice-nav-"+id).classList.remove("active");
+  });
+  document.getElementById("notice-section-"+name).classList.add("active");
+  document.getElementById("notice-section-"+name).style.display = "block";
+  document.getElementById("notice-nav-"+name).classList.add("active");
+};
 
 /* タイトル検索 */
 window.searchTitle = function(){
@@ -358,9 +565,9 @@ function navIdForCategory(cat){
   }[cat] || "nav-all";
 }
 
-/* 画面切り替え */
+/* 画面切り替え（URLモード） */
 window.showSection = function(name){
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll("#urlsMode .section").forEach(s=>s.classList.remove("active"));
   document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
 
   if(name==="info"){
@@ -406,20 +613,16 @@ function render(){
 
   let filtered = urls;
 
-  /* カテゴリ絞り込み */
   if(currentCategory !== "all"){
     filtered = filtered.filter(u => u.category === currentCategory);
   } else {
-    /* すべて → 資料を除外 */
     filtered = filtered.filter(u => u.category !== "資料");
   }
 
-  /* タイトル検索 */
   if(searchKeyword !== ""){
     filtered = filtered.filter(u => u.title.includes(searchKeyword));
   }
 
-  /* 五十音順 */
   filtered.sort((a,b)=>a.title.localeCompare(b.title,"ja"));
 
   filtered.forEach((item)=>{
@@ -442,18 +645,14 @@ function render(){
       `;
     }
 
-    /* タイトル左上・大きく、詳細は改行反映、URLは非表示 */
     div.innerHTML = `
       <div class="item-inner" style="width:100%;">
         <div class="item-title">${item.title}</div>
-
         <div class="item-detail">
           ${(item.detail || "").replace(/\n/g, "<br>")}
         </div>
-
         <div class="item-category">カテゴリ: ${item.category}</div>
       </div>
-
       <div class="item-buttons">${buttonsHtml}</div>
     `;
     list.appendChild(div);
@@ -542,14 +741,14 @@ window.removeUrl = function(i){
   render();
 };
 
-/* クラウド保存（手動のみ） */
+/* クラウド保存 */
 window.cloudSave = function(){
   set(ref(db,"urlData"), urls).then(()=>{
     alert("クラウドに保存しました");
   });
 };
 
-/* クラウド受信（手動） */
+/* クラウド受信 */
 window.cloudLoad = async function(){
   const snapshot = await get(ref(db,"urlData"));
   urls = snapshot.val() || [];
@@ -569,7 +768,6 @@ onValue(ref(db,"urlData"), snap=>{
 const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
 const lat=35.68, lon=139.76;
 
-/* 現在の天気 */
 async function loadCurrentWeather(){
   const el=document.getElementById("weather-now");
   try{
@@ -584,7 +782,6 @@ async function loadCurrentWeather(){
   }catch{ el.textContent="失敗"; }
 }
 
-/* 今日の天気 */
 async function loadTodayWeather(){
   const el=document.getElementById("weather-today");
   try{
@@ -600,7 +797,6 @@ async function loadTodayWeather(){
   }catch{ el.textContent="失敗"; }
 }
 
-/* 1週間の天気 */
 async function loadWeeklyWeather(){
   const el=document.getElementById("weather-week");
   try{
@@ -631,7 +827,6 @@ async function loadWeeklyWeather(){
   }catch{ el.textContent="失敗"; }
 }
 
-/* 天気タブ切り替え */
 window.switchWeatherTab = function(tab){
   document.querySelectorAll(".circle-tab").forEach(b=>{
     b.classList.toggle("active", b.dataset.tab===tab);
@@ -656,10 +851,149 @@ function startClock(){
 window.toggleTheme = function(){
   document.body.classList.toggle("light");
   localStorage.setItem("theme",document.body.classList.contains("light")?"light":"dark");
+  drawCalendar();
 };
 
 if(localStorage.getItem("theme")==="light"){
   document.body.classList.add("light");
+}
+
+/* カレンダー */
+let calendarYear, calendarMonth;
+function initCalendar(){
+  const now = new Date();
+  calendarYear = now.getFullYear();
+  calendarMonth = now.getMonth();
+  drawCalendar();
+}
+
+function drawCalendar(){
+  const grid = document.getElementById("calendar-grid");
+  const label = document.getElementById("calendar-month-label");
+  if(!grid || !label) return;
+
+  grid.innerHTML = "";
+  const first = new Date(calendarYear, calendarMonth, 1);
+  const last = new Date(calendarYear, calendarMonth+1, 0);
+  const startDay = first.getDay();
+  const daysInMonth = last.getDate();
+
+  label.textContent = `${calendarYear}年 ${calendarMonth+1}月`;
+
+  const headers = ["日","月","火","水","木","金","土"];
+  headers.forEach(h=>{
+    const cell = document.createElement("div");
+    cell.className = "calendar-cell calendar-cell-header";
+    cell.textContent = h;
+    grid.appendChild(cell);
+  });
+
+  for(let i=0;i<startDay;i++){
+    const cell = document.createElement("div");
+    cell.className = "calendar-cell";
+    grid.appendChild(cell);
+  }
+
+  const today = new Date();
+  const isLight = document.body.classList.contains("light");
+
+  for(let d=1; d<=daysInMonth; d++){
+    const cell = document.createElement("div");
+    cell.className = "calendar-cell calendar-cell-day";
+    cell.textContent = d;
+
+    if(today.getFullYear()===calendarYear &&
+       today.getMonth()===calendarMonth &&
+       today.getDate()===d){
+      cell.classList.add(isLight ? "calendar-cell-today-light" : "calendar-cell-today-dark");
+    }
+
+    cell.onclick = ()=>showDayEvents(calendarYear, calendarMonth, d);
+    grid.appendChild(cell);
+  }
+}
+
+window.prevMonth = function(){
+  calendarMonth--;
+  if(calendarMonth<0){
+    calendarMonth=11;
+    calendarYear--;
+  }
+  drawCalendar();
+};
+
+window.nextMonth = function(){
+  calendarMonth++;
+  if(calendarMonth>11){
+    calendarMonth=0;
+    calendarYear++;
+  }
+  drawCalendar();
+};
+
+function showDayEvents(y,m,d){
+  const el = document.getElementById("selectedDayEvents");
+  el.textContent = `${y}年${m+1}月${d}日の予定（Googleカレンダー連携予定）`;
+}
+
+/* 今日のお知らせ（仮） */
+function loadTodayNotice(){
+  const el = document.getElementById("todayNotice");
+  const now = new Date();
+  el.textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日の予定は、Googleカレンダー連携後に表示されます。`;
+}
+
+/* ファイルアップロード */
+window.uploadFile = async function(){
+  const title = document.getElementById("fileTitle").value.trim();
+  const fileInput = document.getElementById("fileInput");
+  if(!title || !fileInput.files[0]){
+    alert("タイトルとファイルは必須です");
+    return;
+  }
+  const file = fileInput.files[0];
+  const path = `files/${Date.now()}_${file.name}`;
+  const refFile = sRef(storage, path);
+  await uploadBytes(refFile, file);
+  const url = await getDownloadURL(refFile);
+
+  const listRef = ref(db,"files");
+  const snapshot = await get(listRef);
+  const files = snapshot.val() || [];
+  files.push({title, url, name:file.name, type:file.type});
+  await set(listRef, files);
+  document.getElementById("fileTitle").value = "";
+  fileInput.value = "";
+  loadFiles();
+};
+
+async function loadFiles(){
+  const el = document.getElementById("fileList");
+  if(!el) return;
+  el.innerHTML = "";
+  const snapshot = await get(ref(db,"files"));
+  const files = snapshot.val() || [];
+  files.forEach(f=>{
+    const card = document.createElement("div");
+    card.className = "file-card";
+    const thumb = document.createElement("div");
+    thumb.className = "file-thumb";
+
+    let label = "FILE";
+    if(f.type.startsWith("image/")) label = "IMG";
+    else if(f.type==="application/pdf") label = "PDF";
+    else if(f.type.startsWith("video/")) label = "VID";
+
+    thumb.textContent = label;
+
+    const title = document.createElement("div");
+    title.textContent = f.title;
+
+    card.appendChild(thumb);
+    card.appendChild(title);
+    card.onclick = ()=>window.open(f.url,"_blank");
+    el.appendChild(card);
+  });
 }
 
 /* 初期化 */
@@ -669,6 +1003,9 @@ startClock();
 loadCurrentWeather();
 loadTodayWeather();
 loadWeeklyWeather();
+initCalendar();
+loadTodayNotice();
+loadFiles();
 </script>
 
 </body>
