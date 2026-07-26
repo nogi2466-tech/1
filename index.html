@@ -3,8 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>tetsudo-site2</title>
-
-<!-- スマホで黒帯が出ない設定 -->
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
 
 <style>
@@ -24,7 +22,7 @@ body {
   background:#0f0f0f;
   color:#eee;
   font-family:system-ui;
-  overflow-x:hidden; /* 横スクロール禁止 */
+  overflow-x:hidden;
 }
 
 body.light {
@@ -74,7 +72,7 @@ header {
   cursor:pointer;
   color:#fff;
   font-size:15px;
-  flex-shrink:1; /* スマホで縮む */
+  flex-shrink:1;
 }
 
 #nav-all { background:#555; }
@@ -187,7 +185,7 @@ header {
 .modal input,
 .modal textarea,
 .modal select {
-  width:calc(100% - 20px); /* 左右に余白を作る */
+  width:calc(100% - 20px);
   margin-left:10px;
   margin-right:10px;
   padding:12px;
