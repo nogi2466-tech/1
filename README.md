@@ -362,7 +362,7 @@ import {
 
 /* Firebase設定 */
 const firebaseConfig = {
-  apiKey:"d47572a1cd7e50746a614ef286b5375c",
+  apiKey:"AIzaSyD55Pawag1UichGwM-Uxddivb8lFr7QOU8",
   authDomain:"tetsudo-site6.firebaseapp.com",
   databaseURL:"https://tetsudo-site6-default-rtdb.firebaseio.com",
   projectId:"tetsudo-site6",
