@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>tetsudo-site2</title>
 
-<!-- スマホでズームアウトしても黒帯が出ない設定 -->
+<!-- スマホで黒帯が出ない設定 -->
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
 
 <style>
@@ -24,6 +24,7 @@ body {
   background:#0f0f0f;
   color:#eee;
   font-family:system-ui;
+  overflow-x:hidden; /* 横スクロール禁止 */
 }
 
 body.light {
@@ -73,6 +74,7 @@ header {
   cursor:pointer;
   color:#fff;
   font-size:15px;
+  flex-shrink:1; /* スマホで縮む */
 }
 
 #nav-all { background:#555; }
@@ -101,6 +103,8 @@ header {
   display:flex;
   justify-content:space-between;
   border-left:6px solid #444;
+  width:100%;
+  box-sizing:border-box;
 }
 
 .item-title { font-size:20px; font-weight:bold; }
@@ -183,7 +187,9 @@ header {
 .modal input,
 .modal textarea,
 .modal select {
-  width:100%;
+  width:calc(100% - 20px); /* 左右に余白を作る */
+  margin-left:10px;
+  margin-right:10px;
   padding:12px;
   border-radius:8px;
   border:none;
@@ -223,74 +229,14 @@ textarea {
 </div>
 
 <section id="section-urls" class="section active">
+
+  <!-- 🔍 タイトル検索欄 -->
+  <input id="searchInput" placeholder="タイトル検索"
+         oninput="searchTitle()"
+         style="width:100%; padding:10px; margin-bottom:12px; border-radius:8px; border:none; font-size:16px;">
+
   <div id="urlList"></div>
 </section>
-
-<section id="section-info" class="section">
-  <div class="card">
-    <h3>天気情報（東京）</h3>
-    <div class="circle-tabs">
-      <button class="circle-tab active" data-tab="now" onclick="switchWeatherTab('now')">現在</button>
-      <button class="circle-tab" data-tab="today" onclick="switchWeatherTab('today')">今日</button>
-      <button class="circle-tab" data-tab="week" onclick="switchWeatherTab('week')">1週間</button>
-    </div>
-
-    <div id="weather-now">読み込み中...</div>
-    <div id="weather-today" style="display:none;">読み込み中...</div>
-    <div id="weather-week" style="display:none;">読み込み中...</div>
-  </div>
-
-  <div class="card">
-    <h3>現在時刻</h3>
-    <div id="datetime">読み込み中...</div>
-  </div>
-</section>
-
-<section id="section-settings" class="section">
-  <div class="card">
-    <h3>クラウド同期</h3>
-    <button class="primary" onclick="cloudSave()">クラウド保存</button>
-    <button class="gray" onclick="cloudLoad()">クラウド受信</button>
-  </div>
-
-  <div class="card">
-    <h3>URL追加（パスワード必要）</h3>
-    <input id="passInput" type="password" placeholder="パスワードを入力">
-    <button class="primary" onclick="checkPass()">認証</button>
-    <button id="openAddBtn" class="gray" style="display:none;" onclick="openAddModal()">新規追加画面を開く</button>
-  </div>
-
-  <div class="card">
-    <h3>テーマ切り替え</h3>
-    <button class="primary" onclick="toggleTheme()">ライト / ダーク切り替え</button>
-  </div>
-</section>
-
-<div id="modalBg" class="modal-bg">
-  <div class="modal">
-    <h3 id="modalTitle">新規追加</h3>
-
-    <input id="formTitle" placeholder="タイトル">
-    <input id="formUrl" placeholder="URL">
-    <textarea id="formDetail" placeholder="詳細"></textarea>
-
-    <select id="formCategory">
-      <option value="京王">京王</option>
-      <option value="JR">JR</option>
-      <option value="大手私鉄">大手私鉄</option>
-      <option value="地下鉄">地下鉄</option>
-      <option value="その他">その他</option>
-      <option value="資料">資料</option>
-      <option value="画像">画像</option>
-      <option value="よく使う">よく使う</option>
-    </select>
-
-    <div class="modal-buttons">
-      <button class="gray" onclick="closeModal()">閉じる</button>
-      <button class="primary" onclick="submitModal()">追加する</button>
-    </div>
-  </div>
-</div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
@@ -316,6 +262,13 @@ let urls = JSON.parse(localStorage.getItem("urls") || "[]");
 let currentCategory = "all";
 let editIndex = null;
 let isAuthed = false;
+let searchKeyword = "";  /* ← タイトル検索用 */
+
+/* タイトル検索 */
+window.searchTitle = function(){
+  searchKeyword = document.getElementById("searchInput").value.trim();
+  render();
+};
 
 /* ナビID変換 */
 function navIdForCategory(cat){
@@ -378,11 +331,23 @@ function render(){
   const list = document.getElementById("urlList");
   list.innerHTML = "";
 
-  let filtered = currentCategory==="all" ? urls : urls.filter(u=>u.category===currentCategory);
+  let filtered = urls;
+
+  /* カテゴリ絞り込み */
+  if(currentCategory !== "all"){
+    filtered = filtered.filter(u => u.category === currentCategory);
+  }
+
+  /* タイトル検索 */
+  if(searchKeyword !== ""){
+    filtered = filtered.filter(u => u.title.includes(searchKeyword));
+  }
+
+  /* 五十音順 */
   filtered.sort((a,b)=>a.title.localeCompare(b.title,"ja"));
 
   filtered.forEach((item)=>{
-    const realIndex = urls.indexOf(item);  /* ← 編集ズレ防止の修正済み */
+    const realIndex = urls.indexOf(item);  /* ← 編集ズレ防止 */
 
     const div = document.createElement("div");
     div.className="item";
@@ -413,81 +378,6 @@ function render(){
     list.appendChild(div);
   });
 }
-
-/* パスワード認証 */
-window.checkPass = function(){
-  if(document.getElementById("passInput").value==="0829"){
-    isAuthed = true;
-    document.getElementById("openAddBtn").style.display="inline-block";
-    alert("認証成功");
-    render();
-  }else{
-    alert("違います");
-  }
-};
-
-/* モーダル（追加） */
-window.openAddModal = function(){
-  editIndex=null;
-
-  document.getElementById("modalTitle").textContent="新規追加";
-  document.querySelector(".modal-buttons .primary").textContent = "追加する";
-
-  document.getElementById("formTitle").value="";
-  document.getElementById("formUrl").value="";
-  document.getElementById("formDetail").value="";
-  document.getElementById("formCategory").value="京王";
-
-  document.getElementById("modalBg").style.display="flex";
-};
-
-/* モーダル（編集） */
-window.openEditModal = function(i){
-  editIndex=i;
-  const item=urls[i];
-
-  document.getElementById("modalTitle").textContent="編集";
-  document.querySelector(".modal-buttons .primary").textContent = "上書き保存";
-
-  document.getElementById("formTitle").value=item.title;
-  document.getElementById("formUrl").value=item.url;
-  document.getElementById("formDetail").value=item.detail;
-  document.getElementById("formCategory").value=item.category;
-
-  document.getElementById("modalBg").style.display="flex";
-};
-
-window.closeModal = ()=>document.getElementById("modalBg").style.display="none";
-
-/* 追加・編集 */
-window.submitModal = function(){
-  const title=document.getElementById("formTitle").value.trim();
-  const url=document.getElementById("formUrl").value.trim();
-  const detail=document.getElementById("formDetail").value.trim();
-  const category=document.getElementById("formCategory").value;
-
-  if(!title||!url){ alert("必須です"); return; }
-
-  const data={title,url,detail,category};
-
-  if(editIndex===null) urls.push(data);
-  else urls[editIndex]=data;
-
-  localStorage.setItem("urls",JSON.stringify(urls));
-  cloudSave(true);
-  render();
-  closeModal();
-};
-
-/* 削除 */
-window.removeUrl = function(i){
-  if(!confirm("削除しますか？")) return;
-  urls.splice(i,1);
-  localStorage.setItem("urls",JSON.stringify(urls));
-  cloudSave(true);
-  render();
-};
-
 /* Firebase保存 */
 window.cloudSave = function(silent=false){
   set(ref(db,"urlData"),urls).then(()=>{
@@ -510,6 +400,74 @@ onValue(ref(db,"urlData"),snap=>{
   localStorage.setItem("urls",JSON.stringify(urls));
   render();
 });
+
+/* 天気API */
+const weatherApiKey="d47572a1cd7e50746a614ef286b5375c";
+const lat=35.68, lon=139.76;
+
+/* 現在の天気 */
+async function loadCurrentWeather(){
+  const el=document.getElementById("weather-now");
+  try{
+    const r=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
+    const d=await r.json();
+    el.innerHTML=`
+      <div style="text-align:center;">
+        <img src="https://openweathermap.org/img/wn/${d.weather[0].icon}@4x.png" width="80">
+        <div>${d.weather[0].description}</div>
+        <div>${d.main.temp}℃</div>
+      </div>`;
+  }catch{ el.textContent="失敗"; }
+}
+
+/* 今日の天気 */
+async function loadTodayWeather(){
+  const el=document.getElementById("weather-today");
+  try{
+    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
+    const d=await r.json();
+    const t=d.daily[0];
+    el.innerHTML=`
+      <div style="text-align:center;">
+        <img src="https://openweathermap.org/img/wn/${t.weather[0].icon}@4x.png" width="80">
+        <div>${t.weather[0].description}</div>
+        <div>${t.temp.max}℃ / ${t.temp.min}℃</div>
+        <div>降水確率 ${Math.round(t.pop*100)}%</div>
+      </div>`;
+  }catch{ el.textContent="失敗"; }
+}
+
+/* 1週間の天気 */
+async function loadWeeklyWeather(){
+  const el=document.getElementById("weather-week");
+  try{
+    const r=await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&lang=ja&units=metric`);
+    const d=await r.json();
+    const days=d.daily.slice(0,7);
+
+    const wrap=document.createElement("div");
+    wrap.className="weather-week";
+
+    days.forEach((day,i)=>{
+      const dt=new Date(day.dt*1000);
+      const label=i===0?"今日":`${dt.getMonth()+1}/${dt.getDate()}`;
+
+      const box=document.createElement("div");
+      box.className="weather-day";
+      box.innerHTML=`
+        <div>${label}</div>
+        <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}.png" width="40">
+        <div>${day.weather[0].description}</div>
+        <div>${day.temp.max}℃ / ${day.temp.min}℃</div>
+      `;
+      wrap.appendChild(box);
+    });
+
+    el.innerHTML="";
+    el.appendChild(wrap);
+  }catch{ el.textContent="失敗"; }
+}
+
 /* 天気タブ切り替え */
 window.switchWeatherTab = function(tab){
   document.querySelectorAll(".circle-tab").forEach(b=>{
